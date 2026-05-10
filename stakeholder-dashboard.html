@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Stakeholder Dashboard — PM Toolkit</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Instrument+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #0c0f1a;
+      --surface: #131726;
+      --surface2: #1a1f35;
+      --surface3: #222840;
+      --border: #2a3050;
+      --border-light: #3a4468;
+      --text: #e8eaf2;
+      --text-muted: #7a85a8;
+      --text-dim: #4a5278;
+      --accent: #4f7cff;
+      --accent-light: rgba(79,124,255,0.12);
+      --accent-hover: #3d6aef;
+      --green: #2dd4a0;
+      --green-light: rgba(45,212,160,0.12);
+      --yellow: #f5c842;
+      --yellow-light: rgba(245,200,66,0.12);
+      --red: #ff5c7a;
+      --red-light: rgba(255,92,122,0.12);
+      --purple: #a78bfa;
+      --purple-light: rgba(167,139,250,0.12);
+      --shadow: 0 4px 24px rgba(0,0,0,0.4);
+      --shadow-lg: 0 8px 48px rgba(0,0,0,0.6);
+      --radius: 10px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Instrument Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* HEADER */
+    header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 40px; height: 60px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+    .nav-left { display: flex; align-items: center; gap: 12px; }
+    .nav-back { color: var(--text-muted); text-decoration: none; font-size: 13px; display: flex; align-items: center; gap: 6px; transition: color 0.15s; }
+    .nav-back:hover { color: var(--text); }
+    .nav-divider { color: var(--border-light); }
+    .logo-badge { background: var(--accent); color: white; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; padding: 3px 8px; border-radius: 4px; font-family: 'Syne', sans-serif; }
+    .page-title { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 600; color: var(--text); }
+    .header-right { display: flex; gap: 10px; align-items: center; }
+
+    /* BUTTONS */
+    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 7px; font-family: 'Instrument Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; border: none; transition: all 0.18s; white-space: nowrap; }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-primary:hover:not(:disabled) { background: var(--accent-hover); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(79,124,255,0.35); }
+    .btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
+    .btn-ghost:hover:not(:disabled) { border-color: var(--border-light); color: var(--text); }
+    .btn-danger { background: transparent; color: var(--red); border: 1px solid rgba(255,92,122,0.3); }
+    .btn-danger:hover:not(:disabled) { background: var(--red-light); }
+    .btn-sm { padding: 5px 11px; font-size: 12px; }
+    .btn-icon { width: 32px; height: 32px; padding: 0; justify-content: center; border-radius: 6px; }
+
+    /* HERO */
+    .hero { background: linear-gradient(135deg, var(--surface) 0%, #0f1628 100%); border-bottom: 1px solid var(--border); padding: 48px 40px 40px; position: relative; overflow: hidden; }
+    .hero::before { content: ''; position: absolute; top: -60px; right: -60px; width: 300px; height: 300px; background: radial-gradient(circle, rgba(79,124,255,0.08) 0%, transparent 70%); pointer-events: none; }
+    .hero-inner { max-width: 1100px; margin: 0 auto; }
+    .hero-tag { font-family: 'Syne', sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent); margin-bottom: 12px; }
+    .hero h1 { font-family: 'Syne', sans-serif; font-size: clamp(24px, 4vw, 38px); font-weight: 800; letter-spacing: -0.02em; margin-bottom: 10px; line-height: 1.15; }
+    .hero p { font-size: 14px; color: var(--text-muted); max-width: 480px; line-height: 1.7; }
+
+    /* STATS BAR */
+    .stats-bar { max-width: 1100px; margin: 0 auto; padding: 28px 40px 0; display: flex; gap: 16px; flex-wrap: wrap; }
+    .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 22px; min-width: 140px; flex: 1; }
+    .stat-value { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 800; line-height: 1; margin-bottom: 4px; }
+    .stat-label { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+    .stat-green { color: var(--green); }
+    .stat-yellow { color: var(--yellow); }
+    .stat-red { color: var(--red); }
+    .stat-blue { color: var(--accent); }
+
+    /* MAIN LAYOUT */
+    .main { max-width: 1100px; margin: 0 auto; padding: 28px 40px 80px; display: grid; grid-template-columns: 1fr 360px; gap: 24px; align-items: start; }
+
+    /* LEFT COLUMN */
+    .left-col { display: flex; flex-direction: column; gap: 20px; }
+
+    /* ADD FORM */
+    .form-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .form-card-header { padding: 18px 24px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .form-card-title { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; }
+    .form-card-body { padding: 20px 24px 24px; display: flex; flex-direction: column; gap: 16px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+    .form-group { display: flex; flex-direction: column; gap: 5px; }
+    .form-group label { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); }
+    .form-group input, .form-group select, .form-group textarea { background: var(--surface2); border: 1px solid var(--border); border-radius: 7px; padding: 9px 12px; color: var(--text); font-family: 'Instrument Sans', sans-serif; font-size: 13.5px; outline: none; transition: border-color 0.18s, background 0.18s; width: 100%; }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--accent); background: var(--surface3); }
+    .form-group input::placeholder, .form-group textarea::placeholder { color: var(--text-dim); }
+    .form-group select option { background: var(--surface2); }
+    .form-group textarea { resize: vertical; min-height: 72px; line-height: 1.6; }
+    .form-divider { height: 1px; background: var(--border); margin: 4px 0; }
+    .form-section-label { font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); }
+
+    /* RADIO GROUP */
+    .radio-group { display: flex; gap: 8px; flex-wrap: wrap; }
+    .radio-opt { display: none; }
+    .radio-opt + label { display: inline-flex; align-items: center; gap: 5px; padding: 6px 13px; border-radius: 99px; border: 1px solid var(--border); font-size: 12.5px; cursor: pointer; color: var(--text-muted); transition: all 0.15s; text-transform: none; letter-spacing: 0; font-weight: 500; }
+    .radio-opt:checked + label { border-color: var(--accent); background: var(--accent-light); color: var(--accent); }
+    .radio-opt.green:checked + label { border-color: var(--green); background: var(--green-light); color: var(--green); }
+    .radio-opt.yellow:checked + label { border-color: var(--yellow); background: var(--yellow-light); color: var(--yellow); }
+    .radio-opt.red:checked + label { border-color: var(--red); background: var(--red-light); color: var(--red); }
+
+    /* STAKEHOLDER TABLE */
+    .table-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .table-header { padding: 18px 24px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+    .table-title { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; }
+    .table-search { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 7px 12px; color: var(--text); font-family: 'Instrument Sans', sans-serif; font-size: 13px; outline: none; width: 200px; transition: border-color 0.18s; }
+    .table-search:focus { border-color: var(--accent); }
+    .table-search::placeholder { color: var(--text-dim); }
+    .empty-state { padding: 56px 24px; text-align: center; }
+    .empty-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.4; }
+    .empty-state p { color: var(--text-muted); font-size: 14px; }
+
+    .stakeholder-list { display: flex; flex-direction: column; }
+    .stakeholder-row { display: flex; align-items: flex-start; gap: 16px; padding: 16px 24px; border-bottom: 1px solid var(--border); transition: background 0.15s; }
+    .stakeholder-row:last-child { border-bottom: none; }
+    .stakeholder-row:hover { background: var(--surface2); }
+
+    .s-avatar { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; flex-shrink: 0; }
+    .s-main { flex: 1; min-width: 0; }
+    .s-name { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+    .s-role { font-size: 12.5px; color: var(--text-muted); margin-bottom: 8px; }
+    .s-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+    .tag { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 99px; font-size: 11px; font-weight: 600; }
+    .tag-green { background: var(--green-light); color: var(--green); }
+    .tag-yellow { background: var(--yellow-light); color: var(--yellow); }
+    .tag-red { background: var(--red-light); color: var(--red); }
+    .tag-blue { background: var(--accent-light); color: var(--accent); }
+    .tag-purple { background: var(--purple-light); color: var(--purple); }
+    .tag-gray { background: rgba(122,133,168,0.12); color: var(--text-muted); }
+
+    .s-meta { font-size: 11.5px; color: var(--text-dim); margin-top: 6px; }
+    .s-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+    /* RIGHT COLUMN */
+    .right-col { display: flex; flex-direction: column; gap: 20px; }
+
+    /* POWER/INTEREST GRID */
+    .grid-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .grid-card-header { padding: 16px 20px 12px; border-bottom: 1px solid var(--border); }
+    .grid-card-title { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; }
+    .grid-card-sub { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
+    .grid-card-body { padding: 16px 20px 20px; }
+
+    .power-grid { position: relative; width: 100%; aspect-ratio: 1; background: var(--surface2); border-radius: 8px; border: 1px solid var(--border); overflow: hidden; }
+    .grid-axis-x { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); font-size: 10px; color: var(--text-dim); letter-spacing: 0.06em; text-transform: uppercase; }
+    .grid-axis-y { position: absolute; left: 8px; top: 50%; transform: translateY(-50%) rotate(-90deg); font-size: 10px; color: var(--text-dim); letter-spacing: 0.06em; text-transform: uppercase; }
+    .grid-line-h { position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: var(--border); }
+    .grid-line-v { position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: var(--border); }
+    .grid-label { position: absolute; font-size: 9px; color: var(--text-dim); font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; padding: 4px 6px; }
+    .gl-tl { top: 6px; left: 6px; }
+    .gl-tr { top: 6px; right: 6px; text-align: right; }
+    .gl-bl { bottom: 14px; left: 6px; }
+    .gl-br { bottom: 14px; right: 6px; text-align: right; }
+    .grid-dot { position: absolute; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-size: 10px; font-weight: 700; transform: translate(-50%, -50%); cursor: pointer; transition: transform 0.2s; border: 2px solid rgba(255,255,255,0.15); box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
+    .grid-dot:hover { transform: translate(-50%, -50%) scale(1.2); z-index: 10; }
+
+    /* COMM SUMMARY */
+    .comm-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .comm-list { padding: 12px 20px; display: flex; flex-direction: column; gap: 10px; }
+    .comm-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: var(--surface2); border-radius: 8px; }
+    .comm-avatar { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; font-family: 'Syne', sans-serif; flex-shrink: 0; }
+    .comm-info { flex: 1; min-width: 0; }
+    .comm-name { font-size: 12.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .comm-detail { font-size: 11px; color: var(--text-muted); }
+    .comm-freq { font-size: 11px; color: var(--accent); font-weight: 600; flex-shrink: 0; }
+
+    /* EDIT MODAL */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 200; align-items: flex-start; justify-content: center; padding: 40px 20px; overflow-y: auto; }
+    .modal-overlay.open { display: flex; }
+    .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; width: 100%; max-width: 660px; box-shadow: var(--shadow-lg); animation: slideUp 0.22s ease; }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+    .modal-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .modal-header h2 { font-family: 'Syne', sans-serif; font-size: 17px; font-weight: 700; }
+    .modal-close { background: none; border: none; color: var(--text-muted); font-size: 20px; cursor: pointer; padding: 0 4px; line-height: 1; }
+    .modal-close:hover { color: var(--text); }
+    .modal-body { padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+    .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; }
+
+    /* DETAIL MODAL */
+    .detail-section { margin-bottom: 16px; }
+    .detail-label { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; }
+    .detail-value { font-size: 14px; color: var(--text); line-height: 1.6; }
+    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+    /* TOAST */
+    .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(60px); background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 11px 20px; border-radius: 8px; font-size: 13px; font-weight: 500; z-index: 999; transition: transform 0.3s ease; white-space: nowrap; box-shadow: var(--shadow); }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+    .toast.success { border-color: var(--green); color: var(--green); }
+    .toast.error { border-color: var(--red); color: var(--red); }
+
+    @media (max-width: 900px) {
+      .main { grid-template-columns: 1fr; }
+      header { padding: 0 20px; }
+      .hero { padding: 36px 20px 28px; }
+      .stats-bar { padding: 20px 20px 0; }
+      .main { padding: 20px 20px 60px; }
+      .form-row { grid-template-columns: 1fr; }
+      .form-row-3 { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="nav-left">
+    <a href="index.html" class="nav-back">← PM Toolkit</a>
+    <span class="nav-divider">/</span>
+    <span class="logo-badge">STAKEHOLDERS</span>
+    <span class="page-title">Stakeholder Dashboard</span>
+  </div>
+  <div class="header-right">
+    <button class="btn btn-ghost" onclick="exportPDF()">⬇ Export PDF</button>
+    <button class="btn btn-primary" onclick="openAddForm()">+ Add Stakeholder</button>
+  </div>
+</header>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-tag">Stakeholder Management</div>
+    <h1>Know who matters.<br/>Manage every relationship.</h1>
+    <p>Map your stakeholders, track engagement, plan communication — all in one place.</p>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="stats-bar" id="stats-bar">
+  <div class="stat-card"><div class="stat-value stat-blue" id="stat-total">0</div><div class="stat-label">Total Stakeholders</div></div>
+  <div class="stat-card"><div class="stat-value stat-green" id="stat-supportive">0</div><div class="stat-label">Supportive</div></div>
+  <div class="stat-card"><div class="stat-value stat-yellow" id="stat-neutral">0</div><div class="stat-label">Neutral</div></div>
+  <div class="stat-card"><div class="stat-value stat-red" id="stat-resistant">0</div><div class="stat-label">Resistant</div></div>
+  <div class="stat-card"><div class="stat-value stat-blue" id="stat-high-power">0</div><div class="stat-label">High Power</div></div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <!-- LEFT -->
+  <div class="left-col">
+
+    <!-- ADD FORM -->
+    <div class="form-card" id="add-form-card" style="display:none;">
+      <div class="form-card-header">
+        <div class="form-card-title" id="form-title">Add Stakeholder</div>
+        <button class="btn btn-ghost btn-sm" onclick="closeAddForm()">Cancel</button>
+      </div>
+      <div class="form-card-body">
+        <div class="form-section-label">Basic Information</div>
+        <div class="form-row">
+          <div class="form-group"><label>Full Name *</label><input type="text" id="f-name" placeholder="e.g. Sarah Johnson"/></div>
+          <div class="form-group"><label>Job Title / Role *</label><input type="text" id="f-role" placeholder="e.g. VP of Engineering"/></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Department</label><input type="text" id="f-dept" placeholder="e.g. Engineering"/></div>
+          <div class="form-group"><label>Organization Type</label>
+            <select id="f-org">
+              <option value="">Select…</option>
+              <option value="Internal">Internal</option>
+              <option value="External">External</option>
+              <option value="Executive">Executive Leadership</option>
+              <option value="Client">Client / Customer</option>
+              <option value="Partner">Partner / Vendor</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group"><label>Contact (Email / Slack)</label><input type="text" id="f-contact" placeholder="e.g. sarah@company.com or @sarah-j"/></div>
+
+        <div class="form-divider"></div>
+        <div class="form-section-label">Influence & Interest</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Power / Influence</label>
+            <div class="radio-group">
+              <input type="radio" name="f-power" id="fp-high" value="High" class="radio-opt"/><label for="fp-high">High</label>
+              <input type="radio" name="f-power" id="fp-med" value="Medium" class="radio-opt"/><label for="fp-med">Medium</label>
+              <input type="radio" name="f-power" id="fp-low" value="Low" class="radio-opt"/><label for="fp-low">Low</label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Interest Level</label>
+            <div class="radio-group">
+              <input type="radio" name="f-interest" id="fi-high" value="High" class="radio-opt"/><label for="fi-high">High</label>
+              <input type="radio" name="f-interest" id="fi-med" value="Medium" class="radio-opt"/><label for="fi-med">Medium</label>
+              <input type="radio" name="f-interest" id="fi-low" value="Low" class="radio-opt"/><label for="fi-low">Low</label>
+            </div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Engagement Status</label>
+            <div class="radio-group">
+              <input type="radio" name="f-status" id="fs-sup" value="Supportive" class="radio-opt green"/><label for="fs-sup">✓ Supportive</label>
+              <input type="radio" name="f-status" id="fs-neu" value="Neutral" class="radio-opt yellow"/><label for="fs-neu">● Neutral</label>
+              <input type="radio" name="f-status" id="fs-res" value="Resistant" class="radio-opt red"/><label for="fs-res">✕ Resistant</label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>RACI Role</label>
+            <div class="radio-group">
+              <input type="radio" name="f-raci" id="fr-r" value="Responsible" class="radio-opt"/><label for="fr-r">R</label>
+              <input type="radio" name="f-raci" id="fr-a" value="Accountable" class="radio-opt"/><label for="fr-a">A</label>
+              <input type="radio" name="f-raci" id="fr-c" value="Consulted" class="radio-opt"/><label for="fr-c">C</label>
+              <input type="radio" name="f-raci" id="fr-i" value="Informed" class="radio-opt"/><label for="fr-i">I</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-divider"></div>
+        <div class="form-section-label">Communication Plan</div>
+        <div class="form-row">
+          <div class="form-group"><label>Preferred Method</label>
+            <select id="f-comm-method">
+              <option value="">Select…</option>
+              <option value="Email">Email</option>
+              <option value="Slack">Slack</option>
+              <option value="Weekly Meeting">Weekly Meeting</option>
+              <option value="Bi-weekly Meeting">Bi-weekly Meeting</option>
+              <option value="Monthly Meeting">Monthly Meeting</option>
+              <option value="Status Report">Status Report</option>
+              <option value="Ad-hoc">Ad-hoc / As needed</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Update Frequency</label>
+            <select id="f-comm-freq">
+              <option value="">Select…</option>
+              <option value="Daily">Daily</option>
+              <option value="Weekly">Weekly</option>
+              <option value="Bi-weekly">Bi-weekly</option>
+              <option value="Monthly">Monthly</option>
+              <option value="Quarterly">Quarterly</option>
+              <option value="As needed">As needed</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-divider"></div>
+        <div class="form-section-label">Notes & Strategy</div>
+        <div class="form-group"><label>Expectations & Concerns</label><textarea id="f-expectations" placeholder="What does this stakeholder want from the project? What are their concerns?"></textarea></div>
+        <div class="form-group"><label>Engagement Strategy</label><textarea id="f-strategy" placeholder="How will you engage and manage this stakeholder?"></textarea></div>
+        <div class="form-group"><label>Notes</label><textarea id="f-notes" placeholder="Any additional context about this stakeholder…"></textarea></div>
+
+        <div style="display:flex;justify-content:flex-end;gap:10px;padding-top:4px;">
+          <button class="btn btn-ghost" onclick="closeAddForm()">Cancel</button>
+          <button class="btn btn-primary" id="save-btn" onclick="saveStakeholder()">Save Stakeholder</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STAKEHOLDER TABLE -->
+    <div class="table-card">
+      <div class="table-header">
+        <div class="table-title">Stakeholder Register</div>
+        <input type="text" class="table-search" placeholder="Search stakeholders…" oninput="filterStakeholders(this.value)"/>
+      </div>
+      <div id="stakeholder-list">
+        <div class="empty-state">
+          <div class="empty-icon">👥</div>
+          <p>No stakeholders yet.<br/>Click "Add Stakeholder" to get started.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="right-col">
+
+    <!-- POWER/INTEREST GRID -->
+    <div class="grid-card">
+      <div class="grid-card-header">
+        <div class="grid-card-title">Power / Interest Grid</div>
+        <div class="grid-card-sub">Stakeholders plotted by influence & interest</div>
+      </div>
+      <div class="grid-card-body">
+        <div class="power-grid" id="power-grid">
+          <div class="grid-line-h"></div>
+          <div class="grid-line-v"></div>
+          <div class="grid-label gl-tl">Keep<br/>Satisfied</div>
+          <div class="grid-label gl-tr">Manage<br/>Closely</div>
+          <div class="grid-label gl-bl">Monitor</div>
+          <div class="grid-label gl-br">Keep<br/>Informed</div>
+          <div class="grid-axis-x">INTEREST →</div>
+          <div class="grid-axis-y">POWER ↑</div>
+        </div>
+        <div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;" id="grid-legend"></div>
+      </div>
+    </div>
+
+    <!-- COMMUNICATION PLAN -->
+    <div class="comm-card">
+      <div class="grid-card-header">
+        <div class="grid-card-title">Communication Plan</div>
+        <div class="grid-card-sub">How & when to reach each stakeholder</div>
+      </div>
+      <div class="comm-list" id="comm-list">
+        <p style="color:var(--text-muted);font-size:13px;padding:8px 0;">Add stakeholders to see their communication plan here.</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Edit Stakeholder</h2>
+      <button class="modal-close" onclick="closeEditModal()">✕</button>
+    </div>
+    <div class="modal-body" id="edit-modal-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeEditModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEdit()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="modal-overlay" id="detail-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="detail-name">Stakeholder Details</h2>
+      <button class="modal-close" onclick="closeDetailModal()">✕</button>
+    </div>
+    <div class="modal-body" id="detail-modal-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeDetailModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  let stakeholders = JSON.parse(localStorage.getItem('pm-stakeholders') || '[]');
+  let editingId = null;
+  let searchQuery = '';
+
+  const COLORS = ['#4f7cff','#2dd4a0','#f5c842','#ff5c7a','#a78bfa','#fb923c','#22d3ee','#f472b6'];
+  function getColor(name) { let h = 0; for (let c of name) h = c.charCodeAt(0) + ((h<<5)-h); return COLORS[Math.abs(h) % COLORS.length]; }
+  function initials(name) { return name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2); }
+  function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
+
+  function save() { localStorage.setItem('pm-stakeholders', JSON.stringify(stakeholders)); }
+
+  function showToast(msg, type='') {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.className = 'toast ' + type;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  // ── FORM ──
+  function openAddForm() {
+    editingId = null;
+    document.getElementById('form-title').textContent = 'Add Stakeholder';
+    document.getElementById('save-btn').textContent = 'Save Stakeholder';
+    clearForm();
+    document.getElementById('add-form-card').style.display = 'block';
+    document.getElementById('add-form-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function closeAddForm() { document.getElementById('add-form-card').style.display = 'none'; }
+
+  function clearForm() {
+    ['f-name','f-role','f-dept','f-contact','f-expectations','f-strategy','f-notes'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+    ['f-org','f-comm-method','f-comm-freq'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+    ['f-power','f-interest','f-status','f-raci'].forEach(name => { document.querySelectorAll(`input[name="${name}"]`).forEach(r => r.checked = false); });
+  }
+
+  function getRadio(name) { const r = document.querySelector(`input[name="${name}"]:checked`); return r ? r.value : ''; }
+  function fval(id) { const el = document.getElementById(id); return el ? el.value.trim() : ''; }
+
+  function saveStakeholder() {
+    const name = fval('f-name');
+    const role = fval('f-role');
+    if (!name || !role) { showToast('Name and role are required', 'error'); return; }
+
+    const s = {
+      id: uid(),
+      name, role,
+      dept: fval('f-dept'),
+      org: fval('f-org'),
+      contact: fval('f-contact'),
+      power: getRadio('f-power'),
+      interest: getRadio('f-interest'),
+      status: getRadio('f-status'),
+      raci: getRadio('f-raci'),
+      commMethod: fval('f-comm-method'),
+      commFreq: fval('f-comm-freq'),
+      expectations: fval('f-expectations'),
+      strategy: fval('f-strategy'),
+      notes: fval('f-notes'),
+      createdAt: new Date().toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'})
+    };
+
+    stakeholders.push(s);
+    save();
+    closeAddForm();
+    render();
+    showToast('✓ Stakeholder added', 'success');
+  }
+
+  // ── RENDER ──
+  function filterStakeholders(q) { searchQuery = q.toLowerCase(); render(); }
+
+  function render() {
+    renderList();
+    renderGrid();
+    renderComms();
+    renderStats();
+  }
+
+  function statusTag(status) {
+    if (!status) return '';
+    const map = { 'Supportive': 'tag-green', 'Neutral': 'tag-yellow', 'Resistant': 'tag-red' };
+    const icon = { 'Supportive': '✓', 'Neutral': '●', 'Resistant': '✕' };
+    return `<span class="tag ${map[status]||'tag-gray'}">${icon[status]||''} ${status}</span>`;
+  }
+
+  function raciTag(raci) {
+    if (!raci) return '';
+    const abbr = { 'Responsible':'R', 'Accountable':'A', 'Consulted':'C', 'Informed':'I' };
+    return `<span class="tag tag-purple" title="${raci}">${abbr[raci]||raci} — ${raci}</span>`;
+  }
+
+  function powerTag(power, interest) {
+    if (!power && !interest) return '';
+    const parts = [];
+    if (power) parts.push(`⚡ ${power} Power`);
+    if (interest) parts.push(`👁 ${interest} Interest`);
+    return parts.map(p => `<span class="tag tag-blue">${p}</span>`).join('');
+  }
+
+  function renderList() {
+    const el = document.getElementById('stakeholder-list');
+    const filtered = stakeholders.filter(s => !searchQuery || s.name.toLowerCase().includes(searchQuery) || s.role.toLowerCase().includes(searchQuery) || (s.dept||'').toLowerCase().includes(searchQuery));
+
+    if (filtered.length === 0) {
+      el.innerHTML = `<div class="empty-state"><div class="empty-icon">👥</div><p>${stakeholders.length === 0 ? 'No stakeholders yet.<br/>Click "Add Stakeholder" to get started.' : 'No results found.'}</p></div>`;
+      return;
+    }
+
+    el.innerHTML = filtered.map(s => {
+      const color = getColor(s.name);
+      return `<div class="stakeholder-row">
+        <div class="s-avatar" style="background:${color}22;color:${color};">${initials(s.name)}</div>
+        <div class="s-main">
+          <div class="s-name">${s.name}</div>
+          <div class="s-role">${s.role}${s.dept ? ` · ${s.dept}` : ''}${s.org ? ` · ${s.org}` : ''}</div>
+          <div class="s-tags">
+            ${statusTag(s.status)}
+            ${raciTag(s.raci)}
+            ${s.power ? `<span class="tag tag-blue">⚡ ${s.power}</span>` : ''}
+            ${s.interest ? `<span class="tag tag-gray">👁 ${s.interest} Interest</span>` : ''}
+            ${s.commFreq ? `<span class="tag tag-gray">🔄 ${s.commFreq}</span>` : ''}
+          </div>
+          ${s.contact ? `<div class="s-meta">📧 ${s.contact}</div>` : ''}
+        </div>
+        <div class="s-actions">
+          <button class="btn btn-ghost btn-icon btn-sm" title="View details" onclick="viewDetail('${s.id}')">👁</button>
+          <button class="btn btn-ghost btn-icon btn-sm" title="Edit" onclick="openEdit('${s.id}')">✏️</button>
+          <button class="btn btn-danger btn-icon btn-sm" title="Delete" onclick="deleteStakeholder('${s.id}')">🗑</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  function renderStats() {
+    const total = stakeholders.length;
+    const supportive = stakeholders.filter(s => s.status === 'Supportive').length;
+    const neutral = stakeholders.filter(s => s.status === 'Neutral').length;
+    const resistant = stakeholders.filter(s => s.status === 'Resistant').length;
+    const highPower = stakeholders.filter(s => s.power === 'High').length;
+    document.getElementById('stat-total').textContent = total;
+    document.getElementById('stat-supportive').textContent = supportive;
+    document.getElementById('stat-neutral').textContent = neutral;
+    document.getElementById('stat-resistant').textContent = resistant;
+    document.getElementById('stat-high-power').textContent = highPower;
+  }
+
+  function renderGrid() {
+    const grid = document.getElementById('power-grid');
+    // Remove old dots
+    grid.querySelectorAll('.grid-dot').forEach(d => d.remove());
+    const legend = document.getElementById('grid-legend');
+    legend.innerHTML = '';
+
+    const levelToPos = { 'High': 0.8, 'Medium': 0.5, 'Low': 0.2, '': 0.5 };
+
+    stakeholders.forEach(s => {
+      const color = getColor(s.name);
+      const x = levelToPos[s.interest] || 0.5;
+      const y = 1 - (levelToPos[s.power] || 0.5);
+      const dot = document.createElement('div');
+      dot.className = 'grid-dot';
+      dot.style.cssText = `left:${x*100}%;top:${y*100}%;background:${color};color:white;`;
+      dot.textContent = initials(s.name);
+      dot.title = `${s.name} — Power: ${s.power||'?'}, Interest: ${s.interest||'?'}`;
+      dot.onclick = () => viewDetail(s.id);
+      grid.appendChild(dot);
+
+      const chip = document.createElement('span');
+      chip.className = 'tag';
+      chip.style.cssText = `background:${color}22;color:${color};`;
+      chip.textContent = initials(s.name) + ' ' + s.name.split(' ')[0];
+      legend.appendChild(chip);
+    });
+  }
+
+  function renderComms() {
+    const el = document.getElementById('comm-list');
+    const withComm = stakeholders.filter(s => s.commMethod || s.commFreq);
+    if (withComm.length === 0) {
+      el.innerHTML = '<p style="color:var(--text-muted);font-size:13px;padding:8px 0;">Add stakeholders with a communication plan to see them here.</p>';
+      return;
+    }
+    el.innerHTML = withComm.map(s => {
+      const color = getColor(s.name);
+      return `<div class="comm-item">
+        <div class="comm-avatar" style="background:${color}22;color:${color};">${initials(s.name)}</div>
+        <div class="comm-info">
+          <div class="comm-name">${s.name}</div>
+          <div class="comm-detail">${s.commMethod || 'Method TBD'}</div>
+        </div>
+        <div class="comm-freq">${s.commFreq || ''}</div>
+      </div>`;
+    }).join('');
+  }
+
+  // ── DELETE ──
+  function deleteStakeholder(id) {
+    if (!confirm('Delete this stakeholder? This cannot be undone.')) return;
+    stakeholders = stakeholders.filter(s => s.id !== id);
+    save();
+    render();
+    showToast('Stakeholder removed', '');
+  }
+
+  // ── VIEW DETAIL ──
+  function viewDetail(id) {
+    const s = stakeholders.find(x => x.id === id);
+    if (!s) return;
+    const color = getColor(s.name);
+    document.getElementById('detail-name').innerHTML = `<span style="display:flex;align-items:center;gap:10px;"><span style="width:32px;height:32px;border-radius:50%;background:${color}22;color:${color};display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;">${initials(s.name)}</span>${s.name}</span>`;
+    document.getElementById('detail-modal-body').innerHTML = `
+      <div class="detail-grid">
+        <div class="detail-section"><div class="detail-label">Role</div><div class="detail-value">${s.role||'—'}</div></div>
+        <div class="detail-section"><div class="detail-label">Department</div><div class="detail-value">${s.dept||'—'}</div></div>
+        <div class="detail-section"><div class="detail-label">Organization</div><div class="detail-value">${s.org||'—'}</div></div>
+        <div class="detail-section"><div class="detail-label">Contact</div><div class="detail-value">${s.contact||'—'}</div></div>
+        <div class="detail-section"><div class="detail-label">Power</div><div class="detail-value">${s.power||'—'}</div></div>
+        <div class="detail-section"><div class="detail-label">Interest</div><div class="detail-value">${s.interest||'—'}</div></div>
+        <div class="detail-section"><div class="detail-label">Status</div><div class="detail-value">${statusTag(s.status)||'—'}</div></div>
+        <div class="detail-section"><div class="detail-label">RACI</div><div class="detail-value">${raciTag(s.raci)||'—'}</div></div>
+        <div class="detail-section"><div class="detail-label">Comm. Method</div><div class="detail-value">${s.commMethod||'—'}</div></div>
+        <div class="detail-section"><div class="detail-label">Frequency</div><div class="detail-value">${s.commFreq||'—'}</div></div>
+      </div>
+      ${s.expectations ? `<div class="detail-section"><div class="detail-label">Expectations & Concerns</div><div class="detail-value" style="white-space:pre-wrap;">${s.expectations}</div></div>` : ''}
+      ${s.strategy ? `<div class="detail-section"><div class="detail-label">Engagement Strategy</div><div class="detail-value" style="white-space:pre-wrap;">${s.strategy}</div></div>` : ''}
+      ${s.notes ? `<div class="detail-section"><div class="detail-label">Notes</div><div class="detail-value" style="white-space:pre-wrap;">${s.notes}</div></div>` : ''}
+      <div class="detail-section"><div class="detail-label">Added</div><div class="detail-value" style="color:var(--text-muted);">${s.createdAt||'—'}</div></div>
+    `;
+    document.getElementById('detail-modal').classList.add('open');
+  }
+
+  function closeDetailModal() { document.getElementById('detail-modal').classList.remove('open'); }
+
+  // ── EDIT ──
+  function openEdit(id) {
+    const s = stakeholders.find(x => x.id === id);
+    if (!s) return;
+    editingId = id;
+
+    document.getElementById('edit-modal-body').innerHTML = `
+      <div class="form-section-label" style="margin-bottom:8px;">Basic Information</div>
+      <div class="form-row" style="margin-bottom:14px;">
+        <div class="form-group"><label>Full Name *</label><input type="text" id="e-name" value="${s.name}" placeholder="Full name"/></div>
+        <div class="form-group"><label>Job Title / Role *</label><input type="text" id="e-role" value="${s.role}" placeholder="Role"/></div>
+      </div>
+      <div class="form-row" style="margin-bottom:14px;">
+        <div class="form-group"><label>Department</label><input type="text" id="e-dept" value="${s.dept||''}" placeholder="Department"/></div>
+        <div class="form-group"><label>Organization Type</label><select id="e-org"><option value="">Select…</option><option value="Internal" ${s.org==='Internal'?'selected':''}>Internal</option><option value="External" ${s.org==='External'?'selected':''}>External</option><option value="Executive" ${s.org==='Executive'?'selected':''}>Executive Leadership</option><option value="Client" ${s.org==='Client'?'selected':''}>Client / Customer</option><option value="Partner" ${s.org==='Partner'?'selected':''}>Partner / Vendor</option></select></div>
+      </div>
+      <div class="form-group" style="margin-bottom:14px;"><label>Contact</label><input type="text" id="e-contact" value="${s.contact||''}" placeholder="Email or Slack"/></div>
+      <div class="form-row" style="margin-bottom:14px;">
+        <div class="form-group"><label>Power</label><select id="e-power"><option value="">—</option><option value="High" ${s.power==='High'?'selected':''}>High</option><option value="Medium" ${s.power==='Medium'?'selected':''}>Medium</option><option value="Low" ${s.power==='Low'?'selected':''}>Low</option></select></div>
+        <div class="form-group"><label>Interest</label><select id="e-interest"><option value="">—</option><option value="High" ${s.interest==='High'?'selected':''}>High</option><option value="Medium" ${s.interest==='Medium'?'selected':''}>Medium</option><option value="Low" ${s.interest==='Low'?'selected':''}>Low</option></select></div>
+      </div>
+      <div class="form-row" style="margin-bottom:14px;">
+        <div class="form-group"><label>Engagement Status</label><select id="e-status"><option value="">—</option><option value="Supportive" ${s.status==='Supportive'?'selected':''}>Supportive</option><option value="Neutral" ${s.status==='Neutral'?'selected':''}>Neutral</option><option value="Resistant" ${s.status==='Resistant'?'selected':''}>Resistant</option></select></div>
+        <div class="form-group"><label>RACI Role</label><select id="e-raci"><option value="">—</option><option value="Responsible" ${s.raci==='Responsible'?'selected':''}>Responsible</option><option value="Accountable" ${s.raci==='Accountable'?'selected':''}>Accountable</option><option value="Consulted" ${s.raci==='Consulted'?'selected':''}>Consulted</option><option value="Informed" ${s.raci==='Informed'?'selected':''}>Informed</option></select></div>
+      </div>
+      <div class="form-row" style="margin-bottom:14px;">
+        <div class="form-group"><label>Comm. Method</label><select id="e-method"><option value="">—</option><option value="Email" ${s.commMethod==='Email'?'selected':''}>Email</option><option value="Slack" ${s.commMethod==='Slack'?'selected':''}>Slack</option><option value="Weekly Meeting" ${s.commMethod==='Weekly Meeting'?'selected':''}>Weekly Meeting</option><option value="Bi-weekly Meeting" ${s.commMethod==='Bi-weekly Meeting'?'selected':''}>Bi-weekly Meeting</option><option value="Monthly Meeting" ${s.commMethod==='Monthly Meeting'?'selected':''}>Monthly Meeting</option><option value="Status Report" ${s.commMethod==='Status Report'?'selected':''}>Status Report</option><option value="Ad-hoc" ${s.commMethod==='Ad-hoc'?'selected':''}>Ad-hoc</option></select></div>
+        <div class="form-group"><label>Frequency</label><select id="e-freq"><option value="">—</option><option value="Daily" ${s.commFreq==='Daily'?'selected':''}>Daily</option><option value="Weekly" ${s.commFreq==='Weekly'?'selected':''}>Weekly</option><option value="Bi-weekly" ${s.commFreq==='Bi-weekly'?'selected':''}>Bi-weekly</option><option value="Monthly" ${s.commFreq==='Monthly'?'selected':''}>Monthly</option><option value="Quarterly" ${s.commFreq==='Quarterly'?'selected':''}>Quarterly</option><option value="As needed" ${s.commFreq==='As needed'?'selected':''}>As needed</option></select></div>
+      </div>
+      <div class="form-group" style="margin-bottom:14px;"><label>Expectations & Concerns</label><textarea id="e-expectations" placeholder="What does this stakeholder want?">${s.expectations||''}</textarea></div>
+      <div class="form-group" style="margin-bottom:14px;"><label>Engagement Strategy</label><textarea id="e-strategy" placeholder="How will you manage this stakeholder?">${s.strategy||''}</textarea></div>
+      <div class="form-group"><label>Notes</label><textarea id="e-notes" placeholder="Additional context…">${s.notes||''}</textarea></div>
+    `;
+    document.getElementById('edit-modal').classList.add('open');
+  }
+
+  function saveEdit() {
+    const name = document.getElementById('e-name').value.trim();
+    const role = document.getElementById('e-role').value.trim();
+    if (!name || !role) { showToast('Name and role are required', 'error'); return; }
+    const idx = stakeholders.findIndex(s => s.id === editingId);
+    if (idx === -1) return;
+    stakeholders[idx] = { ...stakeholders[idx], name, role,
+      dept: document.getElementById('e-dept').value.trim(),
+      org: document.getElementById('e-org').value,
+      contact: document.getElementById('e-contact').value.trim(),
+      power: document.getElementById('e-power').value,
+      interest: document.getElementById('e-interest').value,
+      status: document.getElementById('e-status').value,
+      raci: document.getElementById('e-raci').value,
+      commMethod: document.getElementById('e-method').value,
+      commFreq: document.getElementById('e-freq').value,
+      expectations: document.getElementById('e-expectations').value.trim(),
+      strategy: document.getElementById('e-strategy').value.trim(),
+      notes: document.getElementById('e-notes').value.trim(),
+    };
+    save();
+    closeEditModal();
+    render();
+    showToast('✓ Changes saved', 'success');
+  }
+
+  function closeEditModal() { document.getElementById('edit-modal').classList.remove('open'); editingId = null; }
+
+  document.getElementById('edit-modal').addEventListener('click', e => { if (e.target === document.getElementById('edit-modal')) closeEditModal(); });
+  document.getElementById('detail-modal').addEventListener('click', e => { if (e.target === document.getElementById('detail-modal')) closeDetailModal(); });
+
+  // ── PDF EXPORT ──
+  function exportPDF() {
+    if (stakeholders.length === 0) { showToast('Add stakeholders first', 'error'); return; }
+    const w = window.open('', '_blank');
+    const today = new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+    const rows = stakeholders.map(s => `
+      <tr>
+        <td><strong>${s.name}</strong><br/><span style="color:#666;font-size:12px;">${s.role}</span></td>
+        <td>${s.dept||'—'}</td>
+        <td>${s.org||'—'}</td>
+        <td>${s.power||'—'} / ${s.interest||'—'}</td>
+        <td>${s.status||'—'}</td>
+        <td>${s.raci||'—'}</td>
+        <td>${s.commMethod||'—'}</td>
+        <td>${s.commFreq||'—'}</td>
+      </tr>
+      ${(s.expectations||s.strategy||s.notes) ? `<tr style="background:#f9f9f9;"><td colspan="8" style="padding:8px 12px;font-size:12px;color:#555;">
+        ${s.expectations?`<strong>Expectations:</strong> ${s.expectations}<br/>`:''}
+        ${s.strategy?`<strong>Strategy:</strong> ${s.strategy}<br/>`:''}
+        ${s.notes?`<strong>Notes:</strong> ${s.notes}`:''}
+      </td></tr>` : ''}
+    `).join('');
+
+    w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>Stakeholder Dashboard</title>
+    <style>body{font-family:sans-serif;padding:40px;color:#111;}h1{font-size:24px;margin-bottom:4px;}p{color:#666;font-size:13px;margin-bottom:24px;}table{width:100%;border-collapse:collapse;font-size:13px;}th{background:#0c0f1a;color:white;padding:10px 12px;text-align:left;font-size:11px;letter-spacing:.05em;}td{padding:10px 12px;border-bottom:1px solid #e5e5e5;vertical-align:top;}.stat-row{display:flex;gap:20px;margin-bottom:24px;}.stat{background:#f5f5f5;padding:14px 20px;border-radius:8px;}.stat-v{font-size:24px;font-weight:700;}.stat-l{font-size:12px;color:#666;}</style>
+    </head><body>
+    <h1>Stakeholder Dashboard</h1>
+    <p>Exported on ${today} · ${stakeholders.length} stakeholders</p>
+    <div class="stat-row">
+      <div class="stat"><div class="stat-v">${stakeholders.length}</div><div class="stat-l">Total</div></div>
+      <div class="stat"><div class="stat-v" style="color:#16a34a">${stakeholders.filter(s=>s.status==='Supportive').length}</div><div class="stat-l">Supportive</div></div>
+      <div class="stat"><div class="stat-v" style="color:#ca8a04">${stakeholders.filter(s=>s.status==='Neutral').length}</div><div class="stat-l">Neutral</div></div>
+      <div class="stat"><div class="stat-v" style="color:#dc2626">${stakeholders.filter(s=>s.status==='Resistant').length}</div><div class="stat-l">Resistant</div></div>
+    </div>
+    <table><thead><tr><th>Name / Role</th><th>Department</th><th>Org</th><th>Power / Interest</th><th>Status</th><th>RACI</th><th>Comm. Method</th><th>Frequency</th></tr></thead><tbody>${rows}</tbody></table>
+    </body></html>`);
+    w.document.close();
+    w.onload = () => w.print();
+  }
+
+  render();
+</script>
+</body>
+</html>
