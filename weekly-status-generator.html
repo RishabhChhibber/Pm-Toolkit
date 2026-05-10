@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Weekly Status Generator — PM Toolkit</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;0,700;1,400&family=Epilogue:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #f5f3ee;
+      --white: #ffffff;
+      --ink: #1c1917;
+      --ink-light: #44403c;
+      --ink-muted: #78716c;
+      --ink-dim: #a8a29e;
+      --border: #e7e5e0;
+      --border-dark: #d4d0ca;
+      --surface: #faf9f7;
+      --green: #15803d;
+      --green-bg: #dcfce7;
+      --amber: #b45309;
+      --amber-bg: #fef3c7;
+      --red: #b91c1c;
+      --red-bg: #fee2e2;
+      --blue: #1d4ed8;
+      --blue-bg: #dbeafe;
+      --accent: #c2410c;
+      --accent-light: #fff7ed;
+      --shadow: 0 2px 12px rgba(28,25,23,0.08);
+      --shadow-lg: 0 8px 32px rgba(28,25,23,0.12);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Epilogue', sans-serif; background: var(--bg); color: var(--ink); min-height: 100vh; }
+
+    /* HEADER */
+    header { background: var(--ink); padding: 0 40px; height: 60px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+    .nav-left { display: flex; align-items: center; gap: 12px; }
+    .nav-back { color: rgba(255,255,255,0.5); text-decoration: none; font-size: 13px; display: flex; align-items: center; gap: 6px; transition: color 0.15s; }
+    .nav-back:hover { color: white; }
+    .logo-badge { background: var(--accent); color: white; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; padding: 3px 8px; border-radius: 4px; }
+    .page-title { font-family: 'Fraunces', serif; font-size: 16px; font-weight: 600; color: white; }
+    .header-right { display: flex; gap: 10px; }
+
+    /* BUTTONS */
+    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 6px; font-family: 'Epilogue', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; border: none; transition: all 0.18s; white-space: nowrap; }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-primary:hover:not(:disabled) { background: #a83509; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(194,65,12,0.3); }
+    .btn-ghost { background: transparent; color: rgba(255,255,255,0.7); border: 1px solid rgba(255,255,255,0.2); }
+    .btn-ghost:hover:not(:disabled) { color: white; border-color: rgba(255,255,255,0.5); }
+    .btn-outline { background: transparent; color: var(--ink-light); border: 1px solid var(--border-dark); }
+    .btn-outline:hover:not(:disabled) { background: var(--surface); }
+    .btn-danger { background: transparent; color: var(--red); border: 1px solid rgba(185,28,28,0.25); }
+    .btn-danger:hover:not(:disabled) { background: var(--red-bg); }
+    .btn-sm { padding: 5px 11px; font-size: 12px; }
+
+    /* HERO */
+    .hero { background: var(--ink); color: white; padding: 48px 40px 44px; border-bottom: 3px solid var(--accent); }
+    .hero-inner { max-width: 1060px; margin: 0 auto; display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
+    .hero-tag { font-size: 10px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; }
+    .hero h1 { font-family: 'Fraunces', serif; font-size: clamp(22px, 3.5vw, 36px); font-weight: 700; letter-spacing: -0.01em; line-height: 1.2; }
+    .hero h1 em { font-style: italic; color: #fb923c; }
+    .hero p { font-size: 13.5px; color: rgba(255,255,255,0.5); margin-top: 10px; max-width: 420px; line-height: 1.7; }
+    .hero-actions { display: flex; gap: 10px; flex-shrink: 0; }
+
+    /* TABS */
+    .tab-bar { background: var(--white); border-bottom: 1px solid var(--border); padding: 0 40px; display: flex; gap: 0; }
+    .tab { padding: 14px 20px; font-size: 13.5px; font-weight: 500; color: var(--ink-muted); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.18s; background: none; border-top: none; border-left: none; border-right: none; font-family: 'Epilogue', sans-serif; }
+    .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .tab:hover:not(.active) { color: var(--ink-light); }
+
+    /* PANELS */
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* FORM PANEL */
+    .form-wrap { max-width: 1060px; margin: 0 auto; padding: 32px 40px 80px; display: flex; flex-direction: column; gap: 20px; }
+
+    /* CARDS */
+    .card { background: var(--white); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; box-shadow: var(--shadow); }
+    .card:focus-within { border-color: var(--accent); }
+    .card-header { padding: 16px 22px 13px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
+    .card-num { width: 24px; height: 24px; border-radius: 50%; background: var(--ink); color: white; font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-family: 'Epilogue', sans-serif; }
+    .card:focus-within .card-num { background: var(--accent); }
+    .card-title { font-family: 'Fraunces', serif; font-size: 15px; font-weight: 600; }
+    .card-sub { font-size: 11.5px; color: var(--ink-muted); margin-top: 1px; }
+    .card-body { padding: 18px 22px 22px; display: flex; flex-direction: column; gap: 14px; }
+
+    /* INPUTS */
+    .fg { display: flex; flex-direction: column; gap: 5px; }
+    .fg label { font-size: 11px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-muted); }
+    .fg input, .fg textarea, .fg select { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 9px 12px; color: var(--ink); font-family: 'Epilogue', sans-serif; font-size: 13.5px; outline: none; transition: border-color 0.18s, background 0.18s; width: 100%; }
+    .fg input:focus, .fg textarea:focus, .fg select:focus { border-color: var(--accent); background: white; }
+    .fg input::placeholder, .fg textarea::placeholder { color: var(--ink-dim); }
+    .fg textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
+    .fg select option { background: white; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+    .hint { font-size: 11.5px; color: var(--ink-dim); margin-top: -8px; }
+
+    /* RAG */
+    .rag-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+    .rag-item { display: flex; flex-direction: column; gap: 6px; }
+    .rag-item label { font-size: 11px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-muted); }
+    .rag-select { display: flex; gap: 6px; }
+    .rag-opt { display: none; }
+    .rag-opt + label { width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--border-dark); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; transition: all 0.15s; color: var(--ink-dim); text-transform: none; letter-spacing: 0; }
+    .rag-opt.g:checked + label { background: var(--green); border-color: var(--green); color: white; }
+    .rag-opt.a:checked + label { background: var(--amber); border-color: var(--amber); color: white; }
+    .rag-opt.r:checked + label { background: var(--red); border-color: var(--red); color: white; }
+    .rag-opt.g + label:hover { border-color: var(--green); color: var(--green); }
+    .rag-opt.a + label:hover { border-color: var(--amber); color: var(--amber); }
+    .rag-opt.r + label:hover { border-color: var(--red); color: var(--red); }
+
+    /* ACTION ITEMS */
+    .action-items-list { display: flex; flex-direction: column; gap: 8px; }
+    .action-item { display: grid; grid-template-columns: 1fr 150px 140px auto; gap: 8px; align-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 8px 12px; }
+    .action-item input, .action-item select { background: transparent; border: none; font-family: 'Epilogue', sans-serif; font-size: 13px; color: var(--ink); outline: none; padding: 2px 0; }
+    .action-item input::placeholder { color: var(--ink-dim); }
+    .ai-remove { background: none; border: none; color: var(--ink-dim); cursor: pointer; font-size: 16px; padding: 0 4px; transition: color 0.15s; line-height: 1; }
+    .ai-remove:hover { color: var(--red); }
+    .add-row-btn { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--accent); cursor: pointer; background: none; border: none; font-family: 'Epilogue', sans-serif; font-weight: 500; padding: 4px 0; }
+    .add-row-btn:hover { opacity: 0.7; }
+
+    /* KPI ITEMS */
+    .kpi-list { display: flex; flex-direction: column; gap: 8px; }
+    .kpi-item { display: grid; grid-template-columns: 1fr 120px 120px auto; gap: 8px; align-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 8px 12px; }
+    .kpi-item input { background: transparent; border: none; font-family: 'Epilogue', sans-serif; font-size: 13px; color: var(--ink); outline: none; padding: 2px 0; width: 100%; }
+    .kpi-item input::placeholder { color: var(--ink-dim); }
+
+    /* MORALE */
+    .morale-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .morale-opt { display: none; }
+    .morale-opt + label { display: inline-flex; align-items: center; gap: 5px; padding: 7px 14px; border-radius: 99px; border: 1px solid var(--border-dark); font-size: 13px; cursor: pointer; color: var(--ink-muted); transition: all 0.15s; text-transform: none; letter-spacing: 0; font-weight: 500; font-family: 'Epilogue', sans-serif; }
+    .morale-opt:checked + label { border-color: var(--accent); background: var(--accent-light); color: var(--accent); }
+
+    /* FORM ACTIONS */
+    .form-actions { display: flex; justify-content: flex-end; gap: 10px; }
+
+    /* HISTORY PANEL */
+    .history-wrap { max-width: 1060px; margin: 0 auto; padding: 32px 40px 80px; }
+    .history-empty { text-align: center; padding: 80px 20px; }
+    .history-empty .empty-icon { font-size: 40px; opacity: 0.3; margin-bottom: 14px; }
+    .history-empty p { color: var(--ink-muted); font-size: 14px; }
+    .history-list { display: flex; flex-direction: column; gap: 14px; }
+    .history-card { background: var(--white); border: 1px solid var(--border); border-radius: 10px; padding: 20px 24px; box-shadow: var(--shadow); display: flex; align-items: flex-start; gap: 16px; transition: box-shadow 0.18s; }
+    .history-card:hover { box-shadow: var(--shadow-lg); }
+    .history-rag { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+    .history-main { flex: 1; min-width: 0; }
+    .history-title { font-family: 'Fraunces', serif; font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+    .history-meta { font-size: 12.5px; color: var(--ink-muted); margin-bottom: 10px; }
+    .history-summary { font-size: 13.5px; color: var(--ink-light); line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .history-tags { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+    .h-tag { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 99px; font-size: 11px; font-weight: 600; }
+    .h-tag-green { background: var(--green-bg); color: var(--green); }
+    .h-tag-amber { background: var(--amber-bg); color: var(--amber); }
+    .h-tag-red { background: var(--red-bg); color: var(--red); }
+    .h-tag-blue { background: var(--blue-bg); color: var(--blue); }
+    .h-tag-gray { background: var(--border); color: var(--ink-muted); }
+    .history-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+    /* PREVIEW MODAL */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(28,25,23,0.65); z-index: 200; align-items: flex-start; justify-content: center; padding: 32px 20px; overflow-y: auto; }
+    .modal-overlay.open { display: flex; }
+    .modal { background: var(--white); border-radius: 12px; width: 100%; max-width: 760px; box-shadow: var(--shadow-lg); animation: slideUp 0.22s ease; }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+    .modal-header { background: var(--ink); color: white; padding: 18px 26px; border-radius: 12px 12px 0 0; display: flex; align-items: center; justify-content: space-between; }
+    .modal-header h2 { font-family: 'Fraunces', serif; font-size: 17px; }
+    .modal-close { background: none; border: none; color: rgba(255,255,255,0.5); font-size: 20px; cursor: pointer; padding: 0 4px; }
+    .modal-close:hover { color: white; }
+    .modal-body { padding: 28px 32px; max-height: 70vh; overflow-y: auto; }
+    .modal-footer { padding: 16px 32px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; }
+
+    /* REPORT OUTPUT */
+    .report-out { font-family: 'Epilogue', sans-serif; }
+    .report-head { margin-bottom: 22px; padding-bottom: 16px; border-bottom: 2px solid var(--ink); display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+    .report-project { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 700; }
+    .report-meta { font-size: 12px; color: var(--ink-muted); margin-top: 4px; }
+    .rag-badge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 14px; border-radius: 99px; font-size: 12px; font-weight: 700; }
+    .rag-green { background: var(--green-bg); color: var(--green); }
+    .rag-amber { background: var(--amber-bg); color: var(--amber); }
+    .rag-red { background: var(--red-bg); color: var(--red); }
+    .report-rag-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+    .report-section { margin-bottom: 18px; }
+    .report-section-title { font-family: 'Fraunces', serif; font-size: 14px; font-weight: 600; color: var(--ink); border-bottom: 1px solid var(--border); padding-bottom: 5px; margin-bottom: 8px; }
+    .report-text { font-size: 13px; line-height: 1.75; color: var(--ink-light); white-space: pre-wrap; }
+    .report-table { width: 100%; border-collapse: collapse; font-size: 12.5px; margin-top: 4px; }
+    .report-table th { background: var(--surface); padding: 7px 10px; text-align: left; font-size: 10.5px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-muted); border-bottom: 1px solid var(--border); }
+    .report-table td { padding: 7px 10px; border-bottom: 1px solid var(--border); color: var(--ink-light); vertical-align: top; }
+
+    /* TOAST */
+    .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(60px); background: var(--ink); color: white; padding: 11px 20px; border-radius: 7px; font-size: 13px; font-weight: 500; z-index: 999; transition: transform 0.3s ease; white-space: nowrap; box-shadow: var(--shadow); }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+    .toast.success { background: var(--green); }
+    .toast.error { background: var(--red); }
+
+    @media (max-width: 700px) {
+      header { padding: 0 16px; }
+      .hero { padding: 32px 20px; }
+      .tab-bar { padding: 0 16px; overflow-x: auto; }
+      .form-wrap, .history-wrap { padding: 20px 16px 60px; }
+      .two-col, .three-col, .rag-grid { grid-template-columns: 1fr 1fr; }
+      .action-item { grid-template-columns: 1fr auto; }
+      .kpi-item { grid-template-columns: 1fr auto; }
+      .modal-body { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="nav-left">
+    <a href="index.html" class="nav-back">← PM Toolkit</a>
+    <span style="color:rgba(255,255,255,0.2);">/</span>
+    <span class="logo-badge">STATUS</span>
+    <span class="page-title">Weekly Status Generator</span>
+  </div>
+  <div class="header-right">
+    <button class="btn btn-ghost" onclick="switchTab('history')">📋 View History</button>
+    <button class="btn btn-primary" onclick="previewReport()">Preview & Export →</button>
+  </div>
+</header>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-inner">
+    <div>
+      <div class="hero-tag">Weekly Status Report</div>
+      <h1>Keep everyone aligned.<br/><em>Every single week.</em></h1>
+      <p>Fill in the sections below to generate a professional, stakeholder-ready status update — complete with RAG indicators and action items.</p>
+    </div>
+    <div class="hero-actions">
+      <button class="btn btn-outline" style="background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.2);color:white;" onclick="clearForm()">Clear Form</button>
+      <button class="btn btn-primary" onclick="saveReport()">💾 Save Report</button>
+    </div>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tab-bar">
+  <button class="tab active" id="tab-form" onclick="switchTab('form')">✏️ New Report</button>
+  <button class="tab" id="tab-history" onclick="switchTab('history')">📋 Report History <span id="history-count" style="background:var(--border);border-radius:99px;padding:1px 7px;font-size:11px;margin-left:4px;">0</span></button>
+</div>
+
+<!-- FORM PANEL -->
+<div class="panel active" id="panel-form">
+<div class="form-wrap">
+
+  <!-- 1. Header -->
+  <div class="card">
+    <div class="card-header"><div class="card-num">1</div><div><div class="card-title">Report Header</div><div class="card-sub">Basic info about this report</div></div></div>
+    <div class="card-body">
+      <div class="three-col">
+        <div class="fg"><label>Project Name *</label><input type="text" id="r-project" placeholder="e.g. Mobile App Redesign"/></div>
+        <div class="fg"><label>Project Manager</label><input type="text" id="r-pm" placeholder="Your name"/></div>
+        <div class="fg"><label>Project Sponsor</label><input type="text" id="r-sponsor" placeholder="Sponsor name"/></div>
+      </div>
+      <div class="three-col">
+        <div class="fg"><label>Report Date</label><input type="date" id="r-date"/></div>
+        <div class="fg"><label>Reporting Period</label><input type="text" id="r-period" placeholder="e.g. May 5 – May 11, 2025"/></div>
+        <div class="fg"><label>Week Number</label><input type="text" id="r-week" placeholder="e.g. Week 18 of 26"/></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. RAG Status -->
+  <div class="card">
+    <div class="card-header"><div class="card-num">2</div><div><div class="card-title">RAG Status Indicators</div><div class="card-sub">Red / Amber / Green health across key dimensions</div></div></div>
+    <div class="card-body">
+      <div class="rag-grid">
+        <div class="rag-item">
+          <label>Overall Health</label>
+          <div class="rag-select">
+            <input type="radio" name="rag-overall" id="ro-g" value="Green" class="rag-opt g"/><label for="ro-g">G</label>
+            <input type="radio" name="rag-overall" id="ro-a" value="Amber" class="rag-opt a"/><label for="ro-a">A</label>
+            <input type="radio" name="rag-overall" id="ro-r" value="Red" class="rag-opt r"/><label for="ro-r">R</label>
+          </div>
+        </div>
+        <div class="rag-item">
+          <label>Schedule</label>
+          <div class="rag-select">
+            <input type="radio" name="rag-schedule" id="rs-g" value="Green" class="rag-opt g"/><label for="rs-g">G</label>
+            <input type="radio" name="rag-schedule" id="rs-a" value="Amber" class="rag-opt a"/><label for="rs-a">A</label>
+            <input type="radio" name="rag-schedule" id="rs-r" value="Red" class="rag-opt r"/><label for="rs-r">R</label>
+          </div>
+        </div>
+        <div class="rag-item">
+          <label>Budget</label>
+          <div class="rag-select">
+            <input type="radio" name="rag-budget" id="rb-g" value="Green" class="rag-opt g"/><label for="rb-g">G</label>
+            <input type="radio" name="rag-budget" id="rb-a" value="Amber" class="rag-opt a"/><label for="rb-a">A</label>
+            <input type="radio" name="rag-budget" id="rb-r" value="Red" class="rag-opt r"/><label for="rb-r">R</label>
+          </div>
+        </div>
+        <div class="rag-item">
+          <label>Scope</label>
+          <div class="rag-select">
+            <input type="radio" name="rag-scope" id="rsc-g" value="Green" class="rag-opt g"/><label for="rsc-g">G</label>
+            <input type="radio" name="rag-scope" id="rsc-a" value="Amber" class="rag-opt a"/><label for="rsc-a">A</label>
+            <input type="radio" name="rag-scope" id="rsc-r" value="Red" class="rag-opt r"/><label for="rsc-r">R</label>
+          </div>
+        </div>
+        <div class="rag-item">
+          <label>Resources</label>
+          <div class="rag-select">
+            <input type="radio" name="rag-resources" id="rr-g" value="Green" class="rag-opt g"/><label for="rr-g">G</label>
+            <input type="radio" name="rag-resources" id="rr-a" value="Amber" class="rag-opt a"/><label for="rr-a">A</label>
+            <input type="radio" name="rag-resources" id="rr-r" value="Red" class="rag-opt r"/><label for="rr-r">R</label>
+          </div>
+        </div>
+      </div>
+      <div class="fg"><label>RAG Notes</label><textarea id="r-rag-notes" placeholder="Briefly explain any Amber or Red statuses — what's the situation and what's being done about it?"></textarea></div>
+    </div>
+  </div>
+
+  <!-- 3. Executive Summary -->
+  <div class="card">
+    <div class="card-header"><div class="card-num">3</div><div><div class="card-title">Executive Summary</div><div class="card-sub">The most important section — often the only thing senior stakeholders read</div></div></div>
+    <div class="card-body">
+      <div class="fg"><label>Summary *</label><textarea id="r-summary" placeholder="2-3 sentences summarizing the project's current state, biggest wins, and any critical concerns. Write this last, after filling in everything else." style="min-height:100px;"></textarea></div>
+      <p class="hint">Tip: Lead with the overall health, then biggest win, then any concern. e.g. "Project is on track (Green). This week we completed the design handoff ahead of schedule. API integration is flagged Amber due to a vendor delay — mitigation plan in place."</p>
+    </div>
+  </div>
+
+  <!-- 4. Accomplishments -->
+  <div class="card">
+    <div class="card-header"><div class="card-num">4</div><div><div class="card-title">Key Accomplishments</div><div class="card-sub">What was completed this week?</div></div></div>
+    <div class="card-body">
+      <div class="fg"><label>Completed This Week</label><textarea id="r-accomplishments" placeholder="List what was completed. Focus on outcomes, not just activities.&#10;e.g. ✓ Completed user research with 12 participants&#10;     ✓ Design handoff delivered 2 days ahead of schedule&#10;     ✓ Stakeholder review meeting held — all approvals received"></textarea></div>
+      <div class="fg"><label>Milestones Hit</label><input type="text" id="r-milestones" placeholder="Any major milestones reached this week? e.g. Beta launch complete, Phase 1 signed off"/></div>
+    </div>
+  </div>
+
+  <!-- 5. In Progress -->
+  <div class="card">
+    <div class="card-header"><div class="card-num">5</div><div><div class="card-title">In Progress</div><div class="card-sub">What is actively being worked on?</div></div></div>
+    <div class="card-body">
+      <div class="fg"><label>Current Work</label><textarea id="r-inprogress" placeholder="What's actively in progress this week?&#10;e.g. → API integration (60% complete, on track)&#10;     → QA testing for v1.2 features&#10;     → Preparing launch comms deck"></textarea></div>
+      <div class="two-col">
+        <div class="fg"><label>Overall % Complete</label><input type="text" id="r-pct" placeholder="e.g. 65% complete"/></div>
+        <div class="fg"><label>Next Major Milestone</label><input type="text" id="r-next-milestone" placeholder="e.g. Beta launch — June 15"/></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. Next Week -->
+  <div class="card">
+    <div class="card-header"><div class="card-num">6</div><div><div class="card-title">Next Week's Plan</div><div class="card-sub">What's planned for the coming week?</div></div></div>
+    <div class="card-body">
+      <div class="fg"><label>Planned Activities</label><textarea id="r-nextweek" placeholder="What will the team focus on next week? List key activities and priorities."></textarea></div>
+      <div class="fg"><label>Critical Deadlines Next Week</label><input type="text" id="r-deadlines" placeholder="e.g. API integration review — June 12, Design sign-off — June 14"/></div>
+    </div>
+  </div>
+
+  <!-- 7. Blockers & Risks -->
+  <div class="card">
+    <div class="card-header"><div class="card-num">7</div><div><div class="card-title">Blockers & Risks</div><div class="card-sub">Issues stopping progress and risks on the horizon</div></div></div>
+    <div class="card-body">
+      <div class="fg"><label>Blockers</label><textarea id="r-blockers" placeholder="List anything completely stopping progress. Be specific about impact and who needs to help resolve it.&#10;e.g. ✗ Vendor API credentials not received — blocking integration work. Owner: procurement team."></textarea></div>
+      <div class="fg"><label>Risks & Mitigations</label><textarea id="r-risks" placeholder="List risks on the horizon and how you're mitigating them.&#10;e.g. ⚠ Resource gap if contractor contract not renewed by June 10 — actively recruiting backup."></textarea></div>
+    </div>
+  </div>
+
+  <!-- 8. Decisions Needed -->
+  <div class="card">
+    <div class="card-header"><div class="card-num">8</div><div><div class="card-title">Decisions Needed</div><div class="card-sub">Items requiring stakeholder input or approval — be explicit</div></div></div>
+    <div class="card-body">
+      <div class="fg"><label>Decisions Required</label><textarea id="r-decisions" placeholder="List any decisions that need to be made and by whom.&#10;e.g. → Approve revised timeline (needed by June 10) — Owner: Sarah Kim&#10;     → Sign off on updated budget allocation — Owner: CFO"></textarea></div>
+    </div>
+  </div>
+
+  <!-- 9. Budget -->
+  <div class="card">
+    <div class="card-header"><div class="card-num">9</div><div><div class="card-title">Budget Status</div><div class="card-sub">Spend vs planned</div></div></div>
+    <div class="card-body">
+      <div class="three-col">
+        <div class="fg"><label>Total Budget</label><input type="text" id="r-budget-total" placeholder="e.g. $120,000"/></div>
+        <div class="fg"><label>Spent to Date</label><input type="text" id="r-budget-spent" placeholder="e.g. $74,500"/></div>
+        <div class="fg"><label>Remaining</label><input type="text" id="r-budget-remaining" placeholder="e.g. $45,500"/></div>
+      </div>
+      <div class="fg"><label>Budget Notes</label><textarea id="r-budget-notes" placeholder="Any budget variances, concerns, or context to flag?" style="min-height:60px;"></textarea></div>
+    </div>
+  </div>
+
+  <!-- 10. Action Items -->
+  <div class="card">
+    <div class="card-header"><div class="card-num">10</div><div><div class="card-title">Action Items</div><div class="card-sub">Specific tasks with owners and due dates</div></div></div>
+    <div class="card-body">
+      <div class="action-items-list" id="action-items-list"></div>
+      <button class="add-row-btn" onclick="addActionItem()">+ Add Action Item</button>
+    </div>
+  </div>
+
+  <!-- 11. KPIs -->
+  <div class="card">
+    <div class="card-header"><div class="card-num">11</div><div><div class="card-title">KPIs & Metrics</div><div class="card-sub">Key numbers to report this week</div></div></div>
+    <div class="card-body">
+      <div class="kpi-list" id="kpi-list"></div>
+      <button class="add-row-btn" onclick="addKPI()">+ Add Metric</button>
+    </div>
+  </div>
+
+  <!-- 12. Team Morale -->
+  <div class="card">
+    <div class="card-header"><div class="card-num">12</div><div><div class="card-title">Team & Morale</div><div class="card-sub">Optional — how is the team feeling this week?</div></div></div>
+    <div class="card-body">
+      <div class="fg">
+        <label>Team Morale</label>
+        <div class="morale-row">
+          <input type="radio" name="morale" id="m1" value="🟢 High — team is energized" class="morale-opt"/><label for="m1">🟢 High</label>
+          <input type="radio" name="morale" id="m2" value="🟡 Good — steady and focused" class="morale-opt"/><label for="m2">🟡 Good</label>
+          <input type="radio" name="morale" id="m3" value="🟠 Mixed — some concerns" class="morale-opt"/><label for="m3">🟠 Mixed</label>
+          <input type="radio" name="morale" id="m4" value="🔴 Low — team needs support" class="morale-opt"/><label for="m4">🔴 Low</label>
+        </div>
+      </div>
+      <div class="fg"><label>Team Notes</label><textarea id="r-team-notes" placeholder="Any team highlights, concerns, shout-outs, or capacity issues to mention?" style="min-height:60px;"></textarea></div>
+    </div>
+  </div>
+
+  <div class="form-actions">
+    <button class="btn btn-outline" onclick="clearForm()">Clear All</button>
+    <button class="btn btn-outline" onclick="saveReport()">💾 Save Report</button>
+    <button class="btn btn-primary" onclick="previewReport()">Preview & Export →</button>
+  </div>
+
+</div>
+</div>
+
+<!-- HISTORY PANEL -->
+<div class="panel" id="panel-history">
+  <div class="history-wrap">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <div>
+        <h2 style="font-family:'Fraunces',serif;font-size:20px;font-weight:700;">Report History</h2>
+        <p style="font-size:13px;color:var(--ink-muted);margin-top:4px;">All your saved weekly status reports</p>
+      </div>
+      <button class="btn btn-primary" onclick="switchTab('form')">+ New Report</button>
+    </div>
+    <div id="history-content"></div>
+  </div>
+</div>
+
+<!-- PREVIEW MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Weekly Status Report</h2>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body"><div id="report-output"></div></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal()">← Edit</button>
+      <button class="btn btn-outline" onclick="copyReport()">📋 Copy Text</button>
+      <button class="btn btn-primary" onclick="downloadPDF()">⬇ Download PDF</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  let reports = JSON.parse(localStorage.getItem('pm-status-reports') || '[]');
+  let actionItems = [];
+  let kpis = [];
+  let previewingId = null;
+
+  // ── Init ──
+  document.getElementById('r-date').valueAsDate = new Date();
+  addActionItem();
+  addKPI();
+  updateHistoryCount();
+
+  // ── Toast ──
+  function showToast(msg, type='') {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.className = 'toast ' + type;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  // ── Tabs ──
+  function switchTab(tab) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.add('active');
+    document.getElementById('panel-' + tab).classList.add('active');
+    if (tab === 'history') renderHistory();
+  }
+
+  // ── Dynamic Rows ──
+  function addActionItem(item = {}) {
+    const id = Date.now() + Math.random();
+    actionItems.push(id);
+    const list = document.getElementById('action-items-list');
+    const div = document.createElement('div');
+    div.className = 'action-item';
+    div.id = 'ai-' + id;
+    div.innerHTML = `
+      <input type="text" placeholder="Action item description…" value="${item.desc||''}"/>
+      <input type="text" placeholder="Owner" style="border-left:1px solid var(--border);padding-left:10px;" value="${item.owner||''}"/>
+      <input type="date" style="border-left:1px solid var(--border);padding-left:10px;" value="${item.due||''}"/>
+      <button class="ai-remove" onclick="removeRow('ai-${id}')">×</button>`;
+    list.appendChild(div);
+  }
+
+  function addKPI(item = {}) {
+    const id = Date.now() + Math.random();
+    kpis.push(id);
+    const list = document.getElementById('kpi-list');
+    const div = document.createElement('div');
+    div.className = 'kpi-item';
+    div.id = 'kpi-' + id;
+    div.innerHTML = `
+      <input type="text" placeholder="Metric name (e.g. Active Users)" value="${item.name||''}"/>
+      <input type="text" placeholder="This week" style="border-left:1px solid var(--border);padding-left:10px;" value="${item.current||''}"/>
+      <input type="text" placeholder="Target / Last week" style="border-left:1px solid var(--border);padding-left:10px;" value="${item.target||''}"/>
+      <button class="ai-remove" onclick="removeRow('kpi-${id}')">×</button>`;
+    list.appendChild(div);
+  }
+
+  function removeRow(id) {
+    const el = document.getElementById(id);
+    if (el) el.remove();
+  }
+
+  // ── Collect Form ──
+  function getRadio(name) { const r = document.querySelector(`input[name="${name}"]:checked`); return r ? r.value : ''; }
+  function fval(id) { const el = document.getElementById(id); return el ? el.value.trim() : ''; }
+
+  function collectActionItems() {
+    return Array.from(document.querySelectorAll('.action-item')).map(row => {
+      const inputs = row.querySelectorAll('input');
+      return { desc: inputs[0]?.value.trim(), owner: inputs[1]?.value.trim(), due: inputs[2]?.value };
+    }).filter(a => a.desc);
+  }
+
+  function collectKPIs() {
+    return Array.from(document.querySelectorAll('.kpi-item')).map(row => {
+      const inputs = row.querySelectorAll('input');
+      return { name: inputs[0]?.value.trim(), current: inputs[1]?.value.trim(), target: inputs[2]?.value.trim() };
+    }).filter(k => k.name);
+  }
+
+  function collectForm() {
+    return {
+      id: Date.now().toString(36),
+      project: fval('r-project'),
+      pm: fval('r-pm'),
+      sponsor: fval('r-sponsor'),
+      date: fval('r-date'),
+      period: fval('r-period'),
+      week: fval('r-week'),
+      ragOverall: getRadio('rag-overall'),
+      ragSchedule: getRadio('rag-schedule'),
+      ragBudget: getRadio('rag-budget'),
+      ragScope: getRadio('rag-scope'),
+      ragResources: getRadio('rag-resources'),
+      ragNotes: fval('r-rag-notes'),
+      summary: fval('r-summary'),
+      accomplishments: fval('r-accomplishments'),
+      milestones: fval('r-milestones'),
+      inProgress: fval('r-inprogress'),
+      pct: fval('r-pct'),
+      nextMilestone: fval('r-next-milestone'),
+      nextWeek: fval('r-nextweek'),
+      deadlines: fval('r-deadlines'),
+      blockers: fval('r-blockers'),
+      risks: fval('r-risks'),
+      decisions: fval('r-decisions'),
+      budgetTotal: fval('r-budget-total'),
+      budgetSpent: fval('r-budget-spent'),
+      budgetRemaining: fval('r-budget-remaining'),
+      budgetNotes: fval('r-budget-notes'),
+      actionItems: collectActionItems(),
+      kpis: collectKPIs(),
+      morale: getRadio('morale'),
+      teamNotes: fval('r-team-notes'),
+      savedAt: new Date().toISOString()
+    };
+  }
+
+  // ── Save ──
+  function saveReport() {
+    const r = collectForm();
+    if (!r.project) { showToast('Please enter a project name', 'error'); return; }
+    reports.unshift(r);
+    localStorage.setItem('pm-status-reports', JSON.stringify(reports));
+    updateHistoryCount();
+    showToast('✓ Report saved to history', 'success');
+  }
+
+  function updateHistoryCount() {
+    document.getElementById('history-count').textContent = reports.length;
+  }
+
+  // ── Preview ──
+  function previewReport(data) {
+    const r = data || collectForm();
+    if (!r.project) { showToast('Please enter a project name', 'error'); return; }
+    previewingId = data ? data.id : null;
+    document.getElementById('report-output').innerHTML = buildReportHTML(r);
+    document.getElementById('modal').classList.add('open');
+  }
+
+  function ragBadge(status, label) {
+    if (!status) return '';
+    const cls = {Green:'rag-green',Amber:'rag-amber',Red:'rag-red'}[status]||'';
+    const dot = {Green:'🟢',Amber:'🟡',Red:'🔴'}[status]||'';
+    return `<span class="rag-badge ${cls}">${dot} ${label}: ${status}</span>`;
+  }
+
+  function buildReportHTML(r) {
+    const fmtDate = d => d ? new Date(d+'T00:00:00').toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}) : '';
+    let html = `<div class="report-out">
+      <div class="report-head">
+        <div>
+          <div style="font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-muted);margin-bottom:6px;">Weekly Status Report</div>
+          <div class="report-project">${r.project}</div>
+          <div class="report-meta">
+            ${r.pm ? `PM: ${r.pm}` : ''}${r.sponsor ? ` · Sponsor: ${r.sponsor}` : ''}
+            ${r.period ? ` · ${r.period}` : ''}${r.week ? ` · ${r.week}` : ''}
+            ${r.date ? ` · ${fmtDate(r.date)}` : ''}
+          </div>
+        </div>
+        ${r.ragOverall ? `<div>${ragBadge(r.ragOverall,'Overall')}</div>` : ''}
+      </div>`;
+
+    // RAG row
+    const rags = [
+      ragBadge(r.ragOverall,'Overall'), ragBadge(r.ragSchedule,'Schedule'),
+      ragBadge(r.ragBudget,'Budget'), ragBadge(r.ragScope,'Scope'), ragBadge(r.ragResources,'Resources')
+    ].filter(Boolean);
+    if (rags.length) html += `<div class="report-rag-row">${rags.join('')}</div>`;
+    if (r.ragNotes) html += `<div class="report-section"><div class="report-text" style="font-style:italic;color:var(--ink-muted);font-size:12.5px;">ℹ ${r.ragNotes}</div></div>`;
+
+    const sec = (title, content) => content ? `<div class="report-section"><div class="report-section-title">${title}</div><div class="report-text">${content.replace(/</g,'&lt;')}</div></div>` : '';
+
+    if (r.summary) html += `<div class="report-section"><div class="report-section-title">Executive Summary</div><div class="report-text" style="font-weight:500;">${r.summary.replace(/</g,'&lt;')}</div></div>`;
+
+    const acc = [r.accomplishments, r.milestones ? `\nMilestone: ${r.milestones}` : ''].filter(Boolean).join('');
+    html += sec('Key Accomplishments', acc);
+
+    const prog = [r.inProgress, r.pct ? `\nOverall Progress: ${r.pct}` : '', r.nextMilestone ? `Next Milestone: ${r.nextMilestone}` : ''].filter(Boolean).join('\n');
+    html += sec('In Progress', prog);
+
+    const nw = [r.nextWeek, r.deadlines ? `\nCritical Deadlines: ${r.deadlines}` : ''].filter(Boolean).join('');
+    html += sec("Next Week's Plan", nw);
+    html += sec('Blockers', r.blockers);
+    html += sec('Risks & Mitigations', r.risks);
+
+    if (r.decisions) html += `<div class="report-section"><div class="report-section-title" style="color:var(--red);">⚠ Decisions Needed</div><div class="report-text">${r.decisions.replace(/</g,'&lt;')}</div></div>`;
+
+    // Budget
+    const hasBudget = r.budgetTotal || r.budgetSpent || r.budgetRemaining;
+    if (hasBudget) {
+      html += `<div class="report-section"><div class="report-section-title">Budget Status</div>
+        <table class="report-table"><thead><tr><th>Total Budget</th><th>Spent to Date</th><th>Remaining</th></tr></thead>
+        <tbody><tr><td>${r.budgetTotal||'—'}</td><td>${r.budgetSpent||'—'}</td><td>${r.budgetRemaining||'—'}</td></tr></tbody></table>
+        ${r.budgetNotes ? `<div class="report-text" style="margin-top:8px;">${r.budgetNotes}</div>` : ''}
+      </div>`;
+    }
+
+    // Action items
+    if (r.actionItems && r.actionItems.length) {
+      const rows = r.actionItems.map(a => `<tr><td>${a.desc}</td><td>${a.owner||'—'}</td><td>${a.due ? fmtDate(a.due) : '—'}</td></tr>`).join('');
+      html += `<div class="report-section"><div class="report-section-title">Action Items</div>
+        <table class="report-table"><thead><tr><th>Action</th><th>Owner</th><th>Due Date</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+    }
+
+    // KPIs
+    if (r.kpis && r.kpis.length) {
+      const rows = r.kpis.map(k => `<tr><td>${k.name}</td><td>${k.current||'—'}</td><td>${k.target||'—'}</td></tr>`).join('');
+      html += `<div class="report-section"><div class="report-section-title">KPIs & Metrics</div>
+        <table class="report-table"><thead><tr><th>Metric</th><th>This Week</th><th>Target / Last Week</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+    }
+
+    const team = [r.morale ? `Morale: ${r.morale}` : '', r.teamNotes].filter(Boolean).join('\n');
+    html += sec('Team & Morale', team);
+    html += '</div>';
+    return html;
+  }
+
+  function closeModal() { document.getElementById('modal').classList.remove('open'); previewingId = null; }
+  document.getElementById('modal').addEventListener('click', e => { if (e.target === document.getElementById('modal')) closeModal(); });
+
+  // ── Copy ──
+  function copyReport() {
+    const content = document.getElementById('report-output').innerText;
+    navigator.clipboard.writeText(content).then(() => showToast('✓ Copied to clipboard', 'success')).catch(() => showToast('Could not copy', 'error'));
+  }
+
+  // ── PDF ──
+  function downloadPDF() {
+    const content = document.getElementById('report-output').innerHTML;
+    const project = document.getElementById('r-project')?.value || 'Status Report';
+    const w = window.open('','_blank');
+    w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>${project} — Status Report</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700&family=Epilogue:wght@400;500;600&display=swap" rel="stylesheet"/>
+    <style>body{font-family:'Epilogue',sans-serif;color:#1c1917;padding:48px;max-width:720px;margin:0 auto;}
+    .report-head{margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid #1c1917;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+    .report-project{font-family:'Fraunces',serif;font-size:22px;font-weight:700;}
+    .report-meta{font-size:12px;color:#78716c;margin-top:4px;}
+    .rag-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:99px;font-size:12px;font-weight:700;}
+    .rag-green{background:#dcfce7;color:#15803d;}.rag-amber{background:#fef3c7;color:#b45309;}.rag-red{background:#fee2e2;color:#b91c1c;}
+    .report-rag-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;}
+    .report-section{margin-bottom:18px;page-break-inside:avoid;}
+    .report-section-title{font-family:'Fraunces',serif;font-size:14px;font-weight:600;border-bottom:1px solid #e7e5e0;padding-bottom:5px;margin-bottom:8px;}
+    .report-text{font-size:13px;line-height:1.75;color:#44403c;white-space:pre-wrap;}
+    .report-table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:4px;}
+    .report-table th{background:#faf9f7;padding:7px 10px;text-align:left;font-size:10.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:#78716c;border-bottom:1px solid #e7e5e0;}
+    .report-table td{padding:7px 10px;border-bottom:1px solid #e7e5e0;color:#44403c;vertical-align:top;}</style>
+    </head><body>${content}</body></html>`);
+    w.document.close();
+    w.onload = () => w.print();
+  }
+
+  // ── History ──
+  function renderHistory() {
+    const el = document.getElementById('history-content');
+    if (reports.length === 0) {
+      el.innerHTML = `<div class="history-empty"><div class="empty-icon">📋</div><p>No saved reports yet.<br/>Fill in the form and click "Save Report" to start building your history.</p></div>`;
+      return;
+    }
+    el.innerHTML = `<div class="history-list">${reports.map(r => {
+      const ragColor = {Green:'#15803d',Amber:'#b45309',Red:'#b91c1c'}[r.ragOverall]||'#78716c';
+      const tagCls = {Green:'h-tag-green',Amber:'h-tag-amber',Red:'h-tag-red'}[r.ragOverall]||'h-tag-gray';
+      const saved = new Date(r.savedAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+      const blockerTag = r.blockers ? '<span class="h-tag h-tag-red">⚠ Blockers</span>' : '';
+      const decisionTag = r.decisions ? '<span class="h-tag h-tag-amber">⚡ Decisions Needed</span>' : '';
+      const aiTag = r.actionItems?.length ? `<span class="h-tag h-tag-blue">${r.actionItems.length} Actions</span>` : '';
+      return `<div class="history-card">
+        <div class="history-rag" style="background:${ragColor};"></div>
+        <div class="history-main">
+          <div class="history-title">${r.project}</div>
+          <div class="history-meta">${r.period||''} ${r.week ? '· '+r.week : ''} · Saved ${saved} ${r.pm ? '· PM: '+r.pm : ''}</div>
+          ${r.summary ? `<div class="history-summary">${r.summary}</div>` : ''}
+          <div class="history-tags">
+            ${r.ragOverall ? `<span class="h-tag ${tagCls}">● ${r.ragOverall}</span>` : ''}
+            ${blockerTag}${decisionTag}${aiTag}
+          </div>
+        </div>
+        <div class="history-actions">
+          <button class="btn btn-outline btn-sm" onclick="previewReport(reports.find(x=>x.id==='${r.id}'))">View</button>
+          <button class="btn btn-outline btn-sm" onclick="loadReport('${r.id}')">Edit</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteReport('${r.id}')">Delete</button>
+        </div>
+      </div>`;
+    }).join('')}</div>`;
+  }
+
+  function deleteReport(id) {
+    if (!confirm('Delete this report? This cannot be undone.')) return;
+    reports = reports.filter(r => r.id !== id);
+    localStorage.setItem('pm-status-reports', JSON.stringify(reports));
+    updateHistoryCount();
+    renderHistory();
+    showToast('Report deleted');
+  }
+
+  function loadReport(id) {
+    const r = reports.find(x => x.id === id);
+    if (!r) return;
+    // Populate form
+    ['project','pm','sponsor','date','period','week','summary','accomplishments','milestones','inprogress','pct','next-milestone','nextweek','deadlines','blockers','risks','decisions','budget-total','budget-spent','budget-remaining','budget-notes','rag-notes','team-notes'].forEach(key => {
+      const el = document.getElementById('r-' + key);
+      const dataKey = key.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+      if (el && r[dataKey] !== undefined) el.value = r[dataKey];
+    });
+    // RAG
+    ['overall','schedule','budget','scope','resources'].forEach(dim => {
+      const key = 'rag' + dim.charAt(0).toUpperCase() + dim.slice(1);
+      if (r[key]) { const rad = document.querySelector(`input[name="rag-${dim}"][value="${r[key]}"]`); if(rad) rad.checked = true; }
+    });
+    // Morale
+    if (r.morale) { const m = document.querySelector(`input[name="morale"][value="${r.morale}"]`); if(m) m.checked = true; }
+    // Action items
+    document.getElementById('action-items-list').innerHTML = '';
+    actionItems = [];
+    (r.actionItems||[]).forEach(a => addActionItem(a));
+    if (!r.actionItems?.length) addActionItem();
+    // KPIs
+    document.getElementById('kpi-list').innerHTML = '';
+    kpis = [];
+    (r.kpis||[]).forEach(k => addKPI(k));
+    if (!r.kpis?.length) addKPI();
+
+    switchTab('form');
+    showToast('✓ Report loaded for editing', 'success');
+  }
+
+  // ── Clear ──
+  function clearForm() {
+    if (!confirm('Clear all fields?')) return;
+    document.querySelectorAll('.card input, .card textarea, .card select').forEach(el => el.value = '');
+    document.querySelectorAll('.card input[type="radio"]').forEach(r => r.checked = false);
+    document.getElementById('action-items-list').innerHTML = '';
+    document.getElementById('kpi-list').innerHTML = '';
+    actionItems = []; kpis = [];
+    addActionItem(); addKPI();
+    document.getElementById('r-date').valueAsDate = new Date();
+  }
+</script>
+</body>
+</html>
