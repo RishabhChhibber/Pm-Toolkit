@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PM Toolkit — Your Complete Project Management Suite</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,600;0,700;0,900;1,300;1,700&family=Epilogue:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --ink: #0f0e0c;
+      --ink-light: #3a3632;
+      --ink-muted: #7c746c;
+      --cream: #f7f4ef;
+      --white: #ffffff;
+      --border: #e8e4dd;
+      --accent: #c2410c;
+      --accent-light: #fff3ed;
+      --green: #1a6b5a;
+      --blue: #1e40af;
+      --purple: #6b21a8;
+      --shadow: 0 2px 20px rgba(15,14,12,0.08);
+      --shadow-lg: 0 12px 48px rgba(15,14,12,0.14);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Epilogue', sans-serif; background: var(--cream); color: var(--ink); overflow-x: hidden; }
+
+    /* NAV */
+    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 0 48px; height: 60px; display: flex; align-items: center; justify-content: space-between; background: rgba(15,14,12,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.06); }
+    .nav-logo { display: flex; align-items: center; gap: 10px; }
+    .nav-logo-badge { background: var(--accent); color: white; font-size: 10px; font-weight: 700; letter-spacing: 0.1em; padding: 3px 8px; border-radius: 4px; text-transform: uppercase; }
+    .nav-logo-text { font-family: 'Fraunces', serif; font-size: 16px; font-weight: 600; color: white; }
+    .nav-links { display: flex; align-items: center; gap: 6px; }
+    .nav-link { color: rgba(255,255,255,0.55); text-decoration: none; font-size: 13px; padding: 6px 12px; border-radius: 6px; transition: all 0.18s; }
+    .nav-link:hover { color: white; background: rgba(255,255,255,0.08); }
+    .nav-cta { background: var(--accent); color: white; font-size: 13px; font-weight: 500; padding: 7px 16px; border-radius: 6px; text-decoration: none; transition: all 0.18s; }
+    .nav-cta:hover { background: #a83509; transform: translateY(-1px); }
+
+    /* HERO */
+    .hero { min-height: 100vh; background: var(--ink); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 100px 40px 80px; position: relative; overflow: hidden; }
+
+    .hero-bg { position: absolute; inset: 0; pointer-events: none; }
+    .hero-glow { position: absolute; border-radius: 50%; filter: blur(120px); opacity: 0.12; }
+    .glow-1 { width: 600px; height: 600px; background: var(--accent); top: -100px; left: -100px; }
+    .glow-2 { width: 500px; height: 500px; background: #1a6b5a; bottom: -100px; right: -100px; }
+    .glow-3 { width: 400px; height: 400px; background: #1e40af; top: 50%; left: 50%; transform: translate(-50%,-50%); }
+
+    .hero-tag { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255,255,255,0.45); border: 1px solid rgba(255,255,255,0.12); padding: 6px 16px; border-radius: 99px; margin-bottom: 28px; }
+    .hero-tag span { color: var(--accent); }
+
+    .hero h1 { font-family: 'Fraunces', serif; font-size: clamp(40px, 8vw, 88px); font-weight: 900; line-height: 1.02; letter-spacing: -0.03em; color: white; margin-bottom: 24px; max-width: 900px; }
+    .hero h1 em { font-style: italic; font-weight: 300; color: #fb923c; }
+
+    .hero-sub { font-size: clamp(15px, 2vw, 18px); color: rgba(255,255,255,0.45); max-width: 540px; line-height: 1.75; margin-bottom: 44px; }
+
+    .hero-actions { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; margin-bottom: 72px; }
+    .btn-hero-primary { background: var(--accent); color: white; font-family: 'Epilogue', sans-serif; font-size: 14px; font-weight: 600; padding: 13px 28px; border-radius: 8px; text-decoration: none; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+    .btn-hero-primary:hover { background: #a83509; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(194,65,12,0.4); }
+    .btn-hero-secondary { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.8); font-family: 'Epilogue', sans-serif; font-size: 14px; font-weight: 500; padding: 13px 28px; border-radius: 8px; text-decoration: none; border: 1px solid rgba(255,255,255,0.14); transition: all 0.2s; }
+    .btn-hero-secondary:hover { background: rgba(255,255,255,0.12); color: white; }
+
+    .hero-stats { display: flex; gap: 48px; justify-content: center; flex-wrap: wrap; }
+    .hero-stat { text-align: center; }
+    .hero-stat-num { font-family: 'Fraunces', serif; font-size: 32px; font-weight: 700; color: white; line-height: 1; }
+    .hero-stat-label { font-size: 12px; color: rgba(255,255,255,0.35); margin-top: 4px; letter-spacing: 0.04em; }
+
+    /* SCROLL INDICATOR */
+    .scroll-hint { position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 8px; color: rgba(255,255,255,0.2); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; animation: bounce 2s ease-in-out infinite; }
+    .scroll-arrow { width: 1px; height: 32px; background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.3)); }
+    @keyframes bounce { 0%, 100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(6px); } }
+
+    /* SECTION */
+    section { padding: 96px 48px; }
+    .section-inner { max-width: 1100px; margin: 0 auto; }
+    .section-tag { font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent); margin-bottom: 12px; }
+    .section-title { font-family: 'Fraunces', serif; font-size: clamp(28px, 4vw, 44px); font-weight: 700; letter-spacing: -0.02em; line-height: 1.15; margin-bottom: 14px; }
+    .section-sub { font-size: 15px; color: var(--ink-muted); line-height: 1.75; max-width: 520px; }
+
+    /* TOOLS SECTION */
+    .tools-section { background: var(--white); }
+    .tools-header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 48px; flex-wrap: wrap; gap: 20px; }
+    .tools-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+
+    .tool-card { border-radius: 14px; overflow: hidden; border: 1px solid var(--border); box-shadow: var(--shadow); transition: all 0.25s; text-decoration: none; color: inherit; display: flex; flex-direction: column; }
+    .tool-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); }
+
+    .tool-card-top { padding: 32px 28px 28px; flex: 1; }
+    .tool-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; margin-bottom: 20px; }
+    .tool-step { font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 8px; }
+    .tool-name { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 700; letter-spacing: -0.01em; margin-bottom: 10px; line-height: 1.2; }
+    .tool-desc { font-size: 13.5px; color: var(--ink-muted); line-height: 1.7; margin-bottom: 20px; }
+    .tool-features { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+    .tool-features li { font-size: 12.5px; color: var(--ink-light); display: flex; align-items: center; gap: 7px; }
+    .tool-features li::before { content: '✓'; font-weight: 700; font-size: 11px; flex-shrink: 0; }
+
+    .tool-card-bottom { padding: 16px 28px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .tool-link-text { font-size: 13px; font-weight: 600; }
+    .tool-arrow { font-size: 16px; transition: transform 0.18s; }
+    .tool-card:hover .tool-arrow { transform: translateX(4px); }
+
+    /* Card 1 — PRD */
+    .card-prd { background: linear-gradient(135deg, #f7f4ef 0%, #fff7f3 100%); }
+    .card-prd .tool-icon { background: #fff0ea; }
+    .card-prd .tool-step { color: var(--accent); }
+    .card-prd .tool-features li::before { color: var(--accent); }
+    .card-prd .tool-link-text { color: var(--accent); }
+
+    /* Card 2 — Stakeholders */
+    .card-stakeholder { background: linear-gradient(135deg, #0f1a2e 0%, #131e36 100%); color: white; border-color: rgba(255,255,255,0.08); }
+    .card-stakeholder .tool-icon { background: rgba(79,124,255,0.15); }
+    .card-stakeholder .tool-step { color: #7c9fff; }
+    .card-stakeholder .tool-desc { color: rgba(255,255,255,0.5); }
+    .card-stakeholder .tool-features li { color: rgba(255,255,255,0.75); }
+    .card-stakeholder .tool-features li::before { color: #4f7cff; }
+    .card-stakeholder .tool-card-bottom { border-color: rgba(255,255,255,0.08); }
+    .card-stakeholder .tool-link-text { color: #7c9fff; }
+
+    /* Card 3 — Status */
+    .card-status { background: linear-gradient(135deg, #1a0e08 0%, #231208 100%); color: white; border-color: rgba(255,255,255,0.06); }
+    .card-status .tool-icon { background: rgba(194,65,12,0.2); }
+    .card-status .tool-step { color: #fb923c; }
+    .card-status .tool-desc { color: rgba(255,255,255,0.5); }
+    .card-status .tool-features li { color: rgba(255,255,255,0.75); }
+    .card-status .tool-features li::before { color: #fb923c; }
+    .card-status .tool-card-bottom { border-color: rgba(255,255,255,0.08); }
+    .card-status .tool-link-text { color: #fb923c; }
+
+    /* LIFECYCLE SECTION */
+    .lifecycle-section { background: var(--cream); }
+    .lifecycle-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
+    .lifecycle-steps { display: flex; flex-direction: column; gap: 0; }
+    .lifecycle-step { display: flex; gap: 20px; padding: 24px 0; border-bottom: 1px solid var(--border); }
+    .lifecycle-step:last-child { border-bottom: none; }
+    .ls-num { font-family: 'Fraunces', serif; font-size: 36px; font-weight: 900; color: var(--border); line-height: 1; flex-shrink: 0; width: 44px; }
+    .ls-content { flex: 1; }
+    .ls-title { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 700; margin-bottom: 5px; }
+    .ls-desc { font-size: 13.5px; color: var(--ink-muted); line-height: 1.65; }
+    .ls-tool { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 600; margin-top: 8px; padding: 3px 10px; border-radius: 99px; text-decoration: none; }
+
+    .lifecycle-visual { background: var(--ink); border-radius: 16px; padding: 40px; display: flex; flex-direction: column; gap: 16px; }
+    .lv-item { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 16px 20px; display: flex; align-items: center; gap: 14px; }
+    .lv-icon { font-size: 20px; }
+    .lv-text { flex: 1; }
+    .lv-name { font-family: 'Fraunces', serif; font-size: 14px; font-weight: 600; color: white; margin-bottom: 2px; }
+    .lv-desc { font-size: 12px; color: rgba(255,255,255,0.4); }
+    .lv-arrow { color: rgba(255,255,255,0.2); font-size: 18px; }
+    .lv-connector { width: 1px; height: 16px; background: rgba(255,255,255,0.1); margin-left: 29px; }
+
+    /* WHY SECTION */
+    .why-section { background: var(--ink); color: white; }
+    .why-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 48px; }
+    .why-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 28px; }
+    .why-icon { font-size: 28px; margin-bottom: 14px; }
+    .why-title { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 700; margin-bottom: 8px; }
+    .why-desc { font-size: 13.5px; color: rgba(255,255,255,0.5); line-height: 1.7; }
+
+    /* CTA SECTION */
+    .cta-section { background: var(--accent); color: white; text-align: center; padding: 96px 48px; }
+    .cta-section .section-title { color: white; }
+    .cta-section .section-sub { color: rgba(255,255,255,0.7); margin: 0 auto 40px; }
+    .cta-btns { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+    .btn-cta-white { background: white; color: var(--accent); font-family: 'Epilogue', sans-serif; font-size: 14px; font-weight: 600; padding: 13px 28px; border-radius: 8px; text-decoration: none; transition: all 0.2s; }
+    .btn-cta-white:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
+    .btn-cta-outline { background: transparent; color: white; font-family: 'Epilogue', sans-serif; font-size: 14px; font-weight: 500; padding: 13px 28px; border-radius: 8px; text-decoration: none; border: 1px solid rgba(255,255,255,0.4); transition: all 0.2s; }
+    .btn-cta-outline:hover { background: rgba(255,255,255,0.1); }
+
+    /* FOOTER */
+    footer { background: var(--ink); color: rgba(255,255,255,0.3); text-align: center; padding: 32px 48px; font-size: 12.5px; }
+    footer a { color: rgba(255,255,255,0.5); text-decoration: none; }
+    footer a:hover { color: white; }
+
+    /* RESPONSIVE */
+    @media (max-width: 900px) {
+      nav { padding: 0 20px; }
+      section { padding: 64px 24px; }
+      .tools-grid { grid-template-columns: 1fr; }
+      .lifecycle-grid { grid-template-columns: 1fr; }
+      .lifecycle-visual { display: none; }
+      .why-grid { grid-template-columns: 1fr; }
+      .hero { padding: 100px 24px 64px; }
+      .hero-stats { gap: 28px; }
+      .nav-links { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <span class="nav-logo-badge">PM</span>
+    <span class="nav-logo-text">Toolkit</span>
+  </div>
+  <div class="nav-links">
+    <a href="#tools" class="nav-link">Tools</a>
+    <a href="#lifecycle" class="nav-link">How it works</a>
+    <a href="#why" class="nav-link">Why PM Toolkit</a>
+  </div>
+  <a href="#tools" class="nav-cta">Get Started →</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-bg">
+    <div class="hero-glow glow-1"></div>
+    <div class="hero-glow glow-2"></div>
+    <div class="hero-glow glow-3"></div>
+  </div>
+
+  <div class="hero-tag"><span>✦</span> Built for Project Managers & Product Leaders <span>✦</span></div>
+
+  <h1>The toolkit that keeps<br/>your projects <em>running.</em></h1>
+
+  <p class="hero-sub">Three powerful tools — PRD Generator, Stakeholder Dashboard, and Weekly Status Reports — designed to help you define, align, and communicate like a senior PM.</p>
+
+  <div class="hero-actions">
+    <a href="#tools" class="btn-hero-primary">Explore the Tools →</a>
+    <a href="prd-generator.html" class="btn-hero-secondary">Start with PRD Generator</a>
+  </div>
+
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <div class="hero-stat-num">3</div>
+      <div class="hero-stat-label">Core PM Tools</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">100%</div>
+      <div class="hero-stat-label">Free to Use</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">PDF</div>
+      <div class="hero-stat-label">Export Ready</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">0</div>
+      <div class="hero-stat-label">Sign-ups Required</div>
+    </div>
+  </div>
+
+  <div class="scroll-hint">
+    <div class="scroll-arrow"></div>
+    scroll
+  </div>
+</div>
+
+<!-- TOOLS SECTION -->
+<section class="tools-section" id="tools">
+  <div class="section-inner">
+    <div class="tools-header">
+      <div>
+        <div class="section-tag">The Tools</div>
+        <div class="section-title">Everything you need<br/>to manage a project.</div>
+      </div>
+      <p class="section-sub">Each tool is designed for a specific phase of the project lifecycle — use them together or independently.</p>
+    </div>
+
+    <div class="tools-grid">
+
+      <!-- PRD Generator -->
+      <a href="prd-generator.html" class="tool-card card-prd">
+        <div class="tool-card-top">
+          <div class="tool-icon">📄</div>
+          <div class="tool-step">Step 01 — Define</div>
+          <div class="tool-name">PRD Generator</div>
+          <div class="tool-desc">Document what you're building before you build it. Fill in 9 structured sections to produce a professional Product Requirements Document.</div>
+          <ul class="tool-features">
+            <li>9 structured PRD sections</li>
+            <li>AI document extraction</li>
+            <li>AI risk assistant</li>
+            <li>Preview & PDF export</li>
+            <li>Progress tracker</li>
+          </ul>
+        </div>
+        <div class="tool-card-bottom">
+          <span class="tool-link-text">Open PRD Generator</span>
+          <span class="tool-arrow">→</span>
+        </div>
+      </a>
+
+      <!-- Stakeholder Dashboard -->
+      <a href="stakeholder-dashboard.html" class="tool-card card-stakeholder">
+        <div class="tool-card-top">
+          <div class="tool-icon">👥</div>
+          <div class="tool-step">Step 02 — Align</div>
+          <div class="tool-name">Stakeholder Dashboard</div>
+          <div class="tool-desc">Know who matters and manage every relationship. Map stakeholders by power and interest, track engagement, and plan communication.</div>
+          <ul class="tool-features">
+            <li>Power / Interest Grid</li>
+            <li>RACI role assignment</li>
+            <li>Engagement status tracking</li>
+            <li>Communication plan</li>
+            <li>Search, edit & delete</li>
+          </ul>
+        </div>
+        <div class="tool-card-bottom">
+          <span class="tool-link-text">Open Dashboard</span>
+          <span class="tool-arrow">→</span>
+        </div>
+      </a>
+
+      <!-- Weekly Status -->
+      <a href="weekly-status-generator.html" class="tool-card card-status">
+        <div class="tool-card-top">
+          <div class="tool-icon">📊</div>
+          <div class="tool-step">Step 03 — Communicate</div>
+          <div class="tool-name">Weekly Status Generator</div>
+          <div class="tool-desc">Keep every stakeholder informed with structured weekly updates. RAG indicators, action items, KPIs, and a full report history.</div>
+          <ul class="tool-features">
+            <li>RAG status indicators</li>
+            <li>Action items with owners</li>
+            <li>Budget & KPI tracking</li>
+            <li>Full report history</li>
+            <li>Copy, save & PDF export</li>
+          </ul>
+        </div>
+        <div class="tool-card-bottom">
+          <span class="tool-link-text">Open Status Generator</span>
+          <span class="tool-arrow">→</span>
+        </div>
+      </a>
+
+    </div>
+  </div>
+</section>
+
+<!-- LIFECYCLE SECTION -->
+<section class="lifecycle-section" id="lifecycle">
+  <div class="section-inner">
+    <div class="lifecycle-grid">
+      <div>
+        <div class="section-tag">How It Works</div>
+        <div class="section-title">Built around the project lifecycle.</div>
+        <p class="section-sub" style="margin-bottom:36px;">Each tool maps to a phase — from defining what you're building all the way to keeping stakeholders informed week by week.</p>
+
+        <div class="lifecycle-steps">
+          <div class="lifecycle-step">
+            <div class="ls-num">01</div>
+            <div class="ls-content">
+              <div class="ls-title">Define the product</div>
+              <div class="ls-desc">Before any work begins, document the problem, goals, users, features, and success metrics in a structured PRD that everyone can reference.</div>
+              <a href="prd-generator.html" class="ls-tool" style="background:#fff0ea;color:var(--accent);">📄 PRD Generator →</a>
+            </div>
+          </div>
+          <div class="lifecycle-step">
+            <div class="ls-num">02</div>
+            <div class="ls-content">
+              <div class="ls-title">Align your stakeholders</div>
+              <div class="ls-desc">Identify who's involved, map their influence and interest, assign RACI roles, and build a communication plan to keep everyone engaged.</div>
+              <a href="stakeholder-dashboard.html" class="ls-tool" style="background:#e8eeff;color:#1e40af;">👥 Stakeholder Dashboard →</a>
+            </div>
+          </div>
+          <div class="lifecycle-step">
+            <div class="ls-num">03</div>
+            <div class="ls-content">
+              <div class="ls-title">Communicate progress</div>
+              <div class="ls-desc">Once the project is running, generate weekly status reports with RAG indicators, blockers, decisions needed, and action items.</div>
+              <a href="weekly-status-generator.html" class="ls-tool" style="background:#fff0ea;color:var(--accent);">📊 Status Generator →</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="lifecycle-visual">
+        <div class="lv-item">
+          <div class="lv-icon">📄</div>
+          <div class="lv-text">
+            <div class="lv-name">PRD Generator</div>
+            <div class="lv-desc">Define · Document · Align on requirements</div>
+          </div>
+        </div>
+        <div class="lv-connector"></div>
+        <div class="lv-item">
+          <div class="lv-icon">👥</div>
+          <div class="lv-text">
+            <div class="lv-name">Stakeholder Dashboard</div>
+            <div class="lv-desc">Map · Engage · Plan communication</div>
+          </div>
+        </div>
+        <div class="lv-connector"></div>
+        <div class="lv-item">
+          <div class="lv-icon">📊</div>
+          <div class="lv-text">
+            <div class="lv-name">Weekly Status Generator</div>
+            <div class="lv-desc">Report · Track · Keep everyone informed</div>
+          </div>
+        </div>
+        <div style="margin-top:24px;padding-top:24px;border-top:1px solid rgba(255,255,255,0.08);">
+          <div style="font-size:12px;color:rgba(255,255,255,0.25);text-align:center;letter-spacing:0.06em;">PROJECT SUCCESS</div>
+          <div style="text-align:center;font-size:28px;margin-top:8px;">🎯</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY SECTION -->
+<section class="why-section" id="why">
+  <div class="section-inner">
+    <div class="section-tag" style="color:#fb923c;">Why PM Toolkit</div>
+    <div class="section-title" style="color:white;">Built for people who<br/>get things done.</div>
+    <div class="why-grid">
+      <div class="why-card">
+        <div class="why-icon">⚡</div>
+        <div class="why-title">No setup required</div>
+        <div class="why-desc">Open any tool and start immediately. No account, no login, no subscription. Everything works in your browser right now.</div>
+      </div>
+      <div class="why-card">
+        <div class="why-icon">📐</div>
+        <div class="why-title">Industry best practices</div>
+        <div class="why-desc">Every section and field is based on real PM frameworks — RAG status, Power/Interest grids, RACI, and structured PRDs used by top teams.</div>
+      </div>
+      <div class="why-card">
+        <div class="why-icon">📤</div>
+        <div class="why-title">Export everything</div>
+        <div class="why-desc">Every tool generates a clean, professional PDF you can share with your team, stakeholders, or include in your portfolio.</div>
+      </div>
+      <div class="why-card">
+        <div class="why-icon">🤖</div>
+        <div class="why-title">AI-powered features</div>
+        <div class="why-desc">The PRD Generator includes AI document extraction and an AI risk assistant to help you fill sections faster and smarter.</div>
+      </div>
+      <div class="why-card">
+        <div class="why-icon">💾</div>
+        <div class="why-title">Data stays with you</div>
+        <div class="why-desc">Your stakeholders and status reports are saved locally in your browser. No data is ever sent to a server or stored anywhere else.</div>
+      </div>
+      <div class="why-card">
+        <div class="why-icon">🎯</div>
+        <div class="why-title">Portfolio ready</div>
+        <div class="why-desc">Use this toolkit to demonstrate PM thinking to recruiters and hiring managers. Show you understand the full project lifecycle.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="section-inner">
+    <div class="section-tag" style="color:rgba(255,255,255,0.6);">Ready to start?</div>
+    <div class="section-title">Pick a tool and get going.</div>
+    <p class="section-sub">Start with the PRD Generator if you're kicking off a new project, or jump straight into whichever tool you need most right now.</p>
+    <div class="cta-btns">
+      <a href="prd-generator.html" class="btn-cta-white">📄 PRD Generator</a>
+      <a href="stakeholder-dashboard.html" class="btn-cta-outline">👥 Stakeholder Dashboard</a>
+      <a href="weekly-status-generator.html" class="btn-cta-outline">📊 Status Generator</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p>PM Toolkit · Built for project managers, product coordinators & business analysts · <a href="https://github.com/RishabhChhibber/pm-toolkit">View on GitHub</a></p>
+</footer>
+
+</body>
+</html>
